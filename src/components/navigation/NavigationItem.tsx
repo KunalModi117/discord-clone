@@ -35,7 +35,7 @@ const NavigationItem = ({ id, imageUrl, name }: NavigationItemProps) => {
               "bg-primary/10 text-primary rounded-[16px]"
           )}
         >
-          <Image src={imageUrl} alt="Server" fill />
+          <Image src={imageUrl} alt="Server" className="object-cover" fill />
         </div>
       </button>
     </ActionTooltip>
