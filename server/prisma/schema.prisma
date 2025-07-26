@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  username String @unique
+  password String
+
+  servers  Server[]  @relation("OwnedServers")
+  members  Member[]
+  messages Message[]
+
+  createdAt DateTime @default(now())
+}
+
+model Server {
+  id         String @id @default(cuid())
+  name       String
+  ownerId    String
+  inviteCode String @unique
+
+  owner    User      @relation("OwnedServers", fields: [ownerId], references: [id])
+  channels Channel[]
+  members  Member[]
+
+  createdAt DateTime @default(now())
+}
+
+model Channel {
+  id       String @id @default(cuid())
+  name     String
+  type     String // "text" | "audio" | "video"
+  serverId String
+
+  server   Server    @relation(fields: [serverId], references: [id])
+  messages Message[]
+
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id        String @id @default(cuid())
+  content   String
+  userId    String
+  channelId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  channel Channel @relation(fields: [channelId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Member {
+  id       String @id @default(cuid())
+  userId   String
+  serverId String
+  role     String @default("member") // Optional: "admin", "mod", etc.
+
+  user   User   @relation(fields: [userId], references: [id])
+  server Server @relation(fields: [serverId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, serverId]) // Prevent joining same server twice
+}
