@@ -39,6 +39,48 @@ router.get(
   }
 );
 
+router.get(
+  "/channels/:channelId",
+  authenticateToken,
+  async (req, res): Promise<any> => {
+    const userId = req.userId;
+    const { channelId } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    try {
+      const channel = await prisma.channel.findUnique({
+        where: { id: channelId },
+      });
+
+      if (!channel) {
+        return res.status(404).json({ error: "Channel not found" });
+      }
+
+      const isMember = await prisma.member.findFirst({
+        where: {
+          userId,
+          serverId: channel.serverId,
+        },
+      });
+
+      if (!isMember) {
+        return res
+          .status(403)
+          .json({ error: "You're not a member of this server" });
+      }
+
+      return res.status(200).json(channel);
+    } catch (err) {
+      console.error("Error fetching channel details:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+
 router.post(
   "/servers/:serverId/channels",
   authenticateToken,

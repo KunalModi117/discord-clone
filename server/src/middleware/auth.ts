@@ -14,8 +14,7 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ): void => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader?.split(" ")[1];
+  const token = req.cookies?.token;
 
   if (!token) {
     res.status(401).json({ error: "No token provided" });
@@ -36,6 +35,5 @@ export const authenticateToken = (
     next();
   } catch (err) {
     res.status(403).json({ error: "Invalid token" });
-    return;
   }
 };

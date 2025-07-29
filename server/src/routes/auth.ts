@@ -53,7 +53,7 @@ router.post("/login", async (req, res): Promise<any> => {
     process.env.JWT_SECRET!,
     { expiresIn: "7d" }
   );
-
+  res.setHeader('Set-Cookie', `token=${token}; Path=/; HttpOnly; SameSite=Lax`);
   res.json({ token });
 });
 

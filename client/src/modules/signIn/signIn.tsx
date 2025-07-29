@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signInSchema } from "./signInSchema";
 import { useSignIn } from "./useSignIn";
+import { useGetServers } from "@discord/hooks/useGetServers";
 
 interface FormData {
   email: string;
@@ -17,17 +18,27 @@ interface FormData {
 export const SignIn = () => {
   const { control, handleSubmit, errors } = useReactHookForm(signInSchema);
   const { signIn, isPending, isSuccess } = useSignIn();
+  const { getServers, isServersLoaded, isServersLoading,servers } = useGetServers();
   const router = useRouter();
 
   useEffect(() => {
     if (isSuccess) {
-      router.push("/home");
+      getServers();
     }
   }, [isSuccess]);
+
+  useEffect(()=>{
+    if(isServersLoaded){
+      if(servers.length){
+        router.push(`/${servers[0].id}?channelId=${servers[0].channels[0].id}`)
+      }
+    }
+  },[isServersLoaded])
 
   const submit = (data: FormData) => {
     signIn(data);
   };
+
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       <div className="flex flex-col gap-8 items-center justify-center h-fit max-w-[480px] w-full z-20 bg-background rounded-md p-8">
@@ -52,7 +63,7 @@ export const SignIn = () => {
             label="Password"
             required
           />
-          <Button className="w-full" loading={isPending}>
+          <Button className="w-full" loading={isPending || isServersLoading}>
             Sign in
           </Button>
         </form>

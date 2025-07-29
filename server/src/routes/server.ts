@@ -58,7 +58,11 @@ router.get("/", authenticateToken, async (req, res): Promise<any> => {
         userId,
       },
       include: {
-        server: true,
+        server: {
+          include:{
+            channels:true
+          }
+        },
       },
     });
 

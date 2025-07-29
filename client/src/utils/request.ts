@@ -4,7 +4,7 @@ import { appconfig } from "./app.config";
 
 const axiosInstance = axios.create({
   baseURL: appconfig.apiBaseUrl || "",
-  //   withCredentials: true,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },

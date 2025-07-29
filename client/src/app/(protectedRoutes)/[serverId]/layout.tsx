@@ -1,56 +1,39 @@
-import { notFound } from "next/navigation";
-const servers = {
-  server1: {
-    id: "server1",
-    name: "Server One",
-    channels: [
-      { id: "channel1", name: "General" },
-      { id: "channel2", name: "Random" },
-    ],
-  },
-  server2: {
-    id: "server2",
-    name: "Server Two",
-    channels: [
-      { id: "channel3", name: "Announcements" },
-      { id: "channel4", name: "Gaming" },
-    ],
-  },
-};
+// layout.tsx
+import { getServers } from "../../apis/getServers";
+import { getMe } from "../../apis/getMe";
+import { redirect } from "next/navigation";
+import { ChannelList } from "@discord/modules/sidebar/ChannelList";
+import { Sidebar } from "@discord/modules/sidebar/Sidebar";
+import { ChannelHeader } from "@discord/modules/sidebar/ChannelHeader";
 
-export default function ServerLayout({
+export default async function RootLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { serverId: string };
+  params: { serverId?: string };
 }) {
-  const server = servers[params.serverId as keyof typeof servers];
+  const me = await getMe();
+  if (!me) redirect("/sign-in");
 
-  if (!server) {
-    notFound();
-  }
+  const servers = await getServers();
+  const serverId = await params.serverId
+  const activeServerId = serverId || servers?.[0]?.id;
+  const activeServer = servers?.find((s) => s.id === activeServerId);
 
   return (
-    <div className="flex flex-1 h-full">
-      {/* Channel Sidebar */}
-      <aside className="w-64 bg-gray-700 p-4">
-        <h2 className="text-lg font-bold mb-4">{server.name}</h2>
-        <ul>
-          {server.channels.map((channel) => (
-            <li key={channel.id}>
-              <button
-                // href={`/server/${server.id}/${channel.id}`}
-                className="block py-2 px-4 hover:bg-gray-600 rounded"
-              >
-                # {channel.name}
-              </button>
-            </li>
-          ))}
-        </ul>
+    <div className="flex min-h-screen text-white transition-all">
+      <aside className="max-w-[72px] w-full flex flex-col items-center py-4 space-y-4 bg-secondary">
+        <Sidebar
+          initialServers={servers || []}
+          activeServerId={activeServerId || ""}
+        />
       </aside>
-      {/* Chat Area */}
-      <main className="flex-1 p-4">{children}</main>
+      <ChannelList activeServer={activeServer} />
+      <main className="bg-secondary w-full relative overflow-hidden">
+        <ChannelHeader activeServer={activeServer} />
+        {children}
+      </main>
     </div>
   );
 }
