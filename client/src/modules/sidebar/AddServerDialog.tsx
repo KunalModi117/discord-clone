@@ -49,7 +49,7 @@ export const AddServerDialog = ({
   return (
     <>
       <button
-        className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-primary bg-gray-500 ml-3"
+        className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-primary bg-gray-500 mx-3"
         onClick={() => {
           setIsOpen(true);
         }}

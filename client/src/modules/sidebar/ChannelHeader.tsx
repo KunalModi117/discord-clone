@@ -17,7 +17,7 @@ export const ChannelHeader = ({
     (channel) => channel.id === activeChannel
   )?.name;
   return (
-    <div className="flex justify-between items-center p-4 border-b border-input">
+    <div className="flex justify-between items-center p-4 border-b border-input sticky top-0 bg-secondary">
       <h2 className="text-xl font-bold sticky top-0 z-10">
         #&nbsp;{channelName}
       </h2>

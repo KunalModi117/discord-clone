@@ -6,6 +6,7 @@ import { useSocket } from "@discord/hooks/useSocket";
 import { useEffect, useState } from "react";
 import { MessageItem } from "./MessageItem";
 import { MessageItemSkeleton } from "./MessageItemSkeleton";
+import { formatDateDivider } from "@discord/utils/date";
 
 export const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -45,30 +46,43 @@ export const Chat = () => {
     setNewMessage("");
   };
 
-  const getRandomCount = (min: number, max: number) =>
-    Math.floor(Math.random() * (max - min + 1)) + min;
-  
-  const skeletonCount = getRandomCount(3, 7);
-
+  let lastDate = "";
   return (
-    <div className="flex flex-col h-full p-4">
-      <div className="flex-1 flex flex-col">
-        {isLoading ? (
-          Array.from({ length: skeletonCount }).map((_, index) => (
-            <MessageItemSkeleton key={index} />
-          ))
-        ) : (
-          messages?.map((msg, index) => {
-            const prevMsg = messages[index - 1];
-            const showHeader = !prevMsg || prevMsg.user.id !== msg.user.id;
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-clip p-4 gap-4">
+        {isLoading
+          ? Array.from({ length: 10 }).map((_, i) => (
+              <MessageItemSkeleton key={i} />
+            ))
+          : messages?.map((message, i) => {
+              const messageDate = formatDateDivider(message.createdAt);
+              const showDateDivider = messageDate !== lastDate;
+              const showAvatarAndName =
+                i === 0 || messages[i - 1].user.id !== message.user.id;
 
-            return (
-              <MessageItem key={msg.id} message={msg} showHeader={showHeader} />
-            );
-          })
-        )}
+              if (showDateDivider) lastDate = messageDate;
+
+              return (
+                <div key={message.id}>
+                  {showDateDivider && (
+                    <div className="flex items-center justify-center my-4">
+                      <div className="border-t border-muted w-full"></div>
+                      <span className="px-4 text-xs text-muted-foreground whitespace-nowrap">
+                        {messageDate}
+                      </span>
+                      <div className="border-t border-muted w-full"></div>
+                    </div>
+                  )}
+
+                  <MessageItem
+                    message={message}
+                    showAvatarAndName={showAvatarAndName}
+                  />
+                </div>
+              );
+            })}
       </div>
-      <div className="w-full sticky bottom-0 bg-secondary p-4 z-10">
+      <div className="w-full bg-secondary p-4 border-t border-input sticky bottom-0">
         <input
           type="text"
           placeholder="Type a message..."

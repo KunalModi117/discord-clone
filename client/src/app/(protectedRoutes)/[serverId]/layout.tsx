@@ -17,23 +17,23 @@ export default async function RootLayout({
   if (!me) redirect("/sign-in");
 
   const servers = await getServers();
-  const serverId = await params.serverId
+  const serverId = params.serverId;
   const activeServerId = serverId || servers?.[0]?.id;
   const activeServer = servers?.find((s) => s.id === activeServerId);
 
   return (
-    <div className="flex min-h-screen text-white transition-all">
-      <aside className="max-w-[72px] w-full flex flex-col items-center py-4 space-y-4 bg-secondary">
+    <div className="flex text-white">
+      <aside className="w-fit h-screen flex items-center space-y-4 sticky left-0 top-0">
         <Sidebar
           initialServers={servers || []}
           activeServerId={activeServerId || ""}
         />
-      </aside>
       <ChannelList activeServer={activeServer} />
-      <main className="bg-secondary w-full relative overflow-hidden">
+      </aside>
+      <div className="flex flex-col bg-secondary h-full w-full">
         <ChannelHeader activeServer={activeServer} />
-        {children}
-      </main>
+        <div className="w-full">{children}</div>
+      </div>
     </div>
   );
 }

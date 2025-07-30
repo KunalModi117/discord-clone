@@ -13,7 +13,7 @@ export const ChannelList = ({ activeServer }: ChannelListProps) => {
   const searchParams = useSearchParams();
   const activeChannel = searchParams.get("channelId")??"";
   return (
-    <aside className="w-64 bg-secondary/50 p-4">
+    <aside className="w-[303px] bg-secondary/50 p-4 sticky left-0 top-0 h-full">
       <h2 className="text-lg font-bold mb-4">
         {activeServer?.name || "No Server Selected"}
       </h2>
