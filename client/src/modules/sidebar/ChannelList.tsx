@@ -4,33 +4,76 @@ import Link from "next/link";
 import { cn } from "@discord/lib/utils";
 import { ServersData } from "@discord/app/apis/getServers";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { ChevronRight, PlusIcon } from "lucide-react";
+import { useCreateChannel } from "./useCreateChannel";
+import { CreateChannelDialog } from "./CreateChannelDialog";
 
 interface ChannelListProps {
   activeServer?: ServersData;
 }
 
 export const ChannelList = ({ activeServer }: ChannelListProps) => {
+  const [isCreateChannelDialogOpen, setIsCreateChannelDialogOpen] =
+    useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const searchParams = useSearchParams();
-  const activeChannel = searchParams.get("channelId")??"";
+  const activeChannelId = searchParams.get("channelId") ?? "";
+  const channel = activeServer?.channels?.find(
+    (channel) => channel.id === activeChannelId
+  );
   return (
-    <aside className="w-[303px] bg-secondary/50 p-4 sticky left-0 top-0 h-full">
+    <aside className="max-w-[303px] w-full bg-secondary/50 p-4 sticky left-0 top-0 h-full flex flex-col gap-2">
       <h2 className="text-lg font-bold mb-4">
         {activeServer?.name || "No Server Selected"}
       </h2>
-      <ul className="space-y-1">
-        {activeServer?.channels?.map((channel) => (
-          <li key={channel.id}>
-            <Link
-              href={`/${activeServer.id}?channelId=${channel.id}`}
-              className={cn("block py-1 px-2 hover:bg-gray-600 rounded-md", {
-                "bg-gray-600": channel.id === activeChannel,
-              })}
-            >
-              # {channel.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <button
+        className="text-xs text-white/50 flex justify-between w-full"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <span className="flex gap-4 hover:text-white">
+          Text channels
+          <ChevronRight
+            className={cn("w-4 h-4 transition-all", {
+              "rotate-90": isCollapsed,
+            })}
+          />
+        </span>
+        <PlusIcon
+          className="w-4 h-4 hover:text-white"
+          onClick={() => setIsCreateChannelDialogOpen(true)}
+        />
+      </button>
+      {isCollapsed ? (
+        <ul className="space-y-1">
+          {activeServer?.channels?.map((channel) => (
+            <li key={channel.id}>
+              <Link
+                href={`/${activeServer.id}?channelId=${channel.id}`}
+                className={cn("block py-1 px-2 hover:bg-gray-600 rounded-md", {
+                  "bg-gray-600": channel.id === activeChannelId,
+                })}
+              >
+                # {channel.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Link
+          href={`/${activeServer?.id}?channelId=${channel?.id}`}
+          className={cn("block py-1 px-2 hover:bg-gray-600 rounded-md", {
+            "bg-gray-600": channel?.id === activeChannelId,
+          })}
+        >
+          # {channel?.name}
+        </Link>
+      )}
+      <CreateChannelDialog
+        isOpen={isCreateChannelDialogOpen}
+        handleClick={() => setIsCreateChannelDialogOpen(false)}
+        serverId={activeServer?.id || ""}
+      />
     </aside>
   );
 };

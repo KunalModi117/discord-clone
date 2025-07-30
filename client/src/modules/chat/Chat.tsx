@@ -49,7 +49,7 @@ export const Chat = () => {
   let lastDate = "";
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-clip p-4 gap-4">
+      <div className="overflow-y-scroll p-4 gap-4 h-[calc(100vh-136px)]">
         {isLoading
           ? Array.from({ length: 10 }).map((_, i) => (
               <MessageItemSkeleton key={i} />

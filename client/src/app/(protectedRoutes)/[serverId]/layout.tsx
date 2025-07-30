@@ -23,16 +23,16 @@ export default async function RootLayout({
 
   return (
     <div className="flex text-white">
-      <aside className="w-fit h-screen flex items-center space-y-4 sticky left-0 top-0">
+      <aside className="max-w-[375px] w-full h-screen flex items-center space-y-4 sticky left-0 top-0">
         <Sidebar
           initialServers={servers || []}
           activeServerId={activeServerId || ""}
         />
-      <ChannelList activeServer={activeServer} />
+        <ChannelList activeServer={activeServer} />
       </aside>
       <div className="flex flex-col bg-secondary h-full w-full">
         <ChannelHeader activeServer={activeServer} />
-        <div className="w-full">{children}</div>
+        <div className="w-full h-full">{children}</div>
       </div>
     </div>
   );
