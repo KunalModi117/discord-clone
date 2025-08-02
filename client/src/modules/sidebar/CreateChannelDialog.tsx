@@ -12,6 +12,7 @@ import {
 import { useCreateChannel } from "./useCreateChannel";
 import { useReactHookForm } from "@discord/hooks/useReactHookForm";
 import { channelSchema } from "./channelSchema";
+import { useEffect } from "react";
 interface FormData {
   name: string;
 }
@@ -20,10 +21,12 @@ export const CreateChannelDialog = ({
   isOpen,
   handleClick,
   serverId,
+  handleSuccess,
 }: {
   isOpen: boolean;
   handleClick: () => void;
   serverId: string;
+  handleSuccess: () => void;
 }) => {
   const { createChannel, isChannelCreated, isChannelCreating } =
     useCreateChannel();
@@ -36,21 +39,27 @@ export const CreateChannelDialog = ({
     });
   };
 
+  useEffect(() => {
+    if (isChannelCreated) {
+      handleSuccess();
+      handleClick();
+    }
+  }, [isChannelCreated]);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClick}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Customise your server</DialogTitle>
+          <DialogTitle>Create Channel</DialogTitle>
           <DialogDescription>
-            Give your new server a personality with a name. You can always
-            change it later.
+            Create a new channel for your server.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <InputField
             control={control}
             name="name"
-            label="Server Name"
+            label="Channel Name"
             required
             message={errors.name?.message}
           />

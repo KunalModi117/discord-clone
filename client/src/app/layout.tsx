@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@discord/components/theme-provider";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Toaster } from "@discord/components/ui/sonner";
 import { QueryProvider } from "@discord/components/query-client-provider";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-full`}
       >
         <QueryProvider>
+          <Toaster />
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
           </ThemeProvider>

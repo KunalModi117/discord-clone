@@ -39,7 +39,7 @@ export const fetcher = async <T = any>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(error.message || `Request failed: ${res.status}`);
+    console.log('error', error);
   }
 
   return res.json();

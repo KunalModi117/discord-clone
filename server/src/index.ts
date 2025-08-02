@@ -3,7 +3,7 @@ import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
-import { verify } from "jsonwebtoken"; 
+import { verify } from "jsonwebtoken";
 import { parse } from "cookie";
 
 import authRoutes from "./routes/auth";
@@ -15,10 +15,12 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const app = express();
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const server = http.createServer(app);
@@ -59,7 +61,7 @@ io.on("connection", (socket) => {
     console.log(`🔵 Socket ${socket.id} left channel ${channelId}`);
   });
 
-  socket.on("message:send", async ({ content, channelId }) => {
+  socket.on("message:send", async ({ content, channelId, tempId }) => {
     try {
       const userId = (socket as any).userId;
       if (!userId) return;
@@ -75,7 +77,7 @@ io.on("connection", (socket) => {
         },
       });
 
-      io.to(channelId).emit("message:new", saved);
+      io.to(channelId).emit("message:new", { ...saved, tempId });
       console.log(`📨 Message sent in ${channelId}:`, content);
     } catch (err) {
       console.error("❌ Error sending message:", err);

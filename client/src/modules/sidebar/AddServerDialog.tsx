@@ -8,9 +8,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogClose,
-} from "../../components/ui/dialog";
-import { Button } from "../../components/ui/button";
-import { DialogTrigger } from "@radix-ui/react-dialog";
+} from "@discord/components/ui/dialog";
+import { Button } from "@discord/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { useReactHookForm } from "@discord/hooks/useReactHookForm";
 import { createServerSchema } from "./createServerSchema";

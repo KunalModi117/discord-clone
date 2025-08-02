@@ -1,6 +1,5 @@
-// layout.tsx
-import { getServers } from "../../apis/getServers";
-import { getMe } from "../../apis/getMe";
+import { getServers } from "@discord/app/apis/getServers";
+import { getMe } from "@discord/app/apis/getMe";
 import { redirect } from "next/navigation";
 import { ChannelList } from "@discord/modules/sidebar/ChannelList";
 import { Sidebar } from "@discord/modules/sidebar/Sidebar";
