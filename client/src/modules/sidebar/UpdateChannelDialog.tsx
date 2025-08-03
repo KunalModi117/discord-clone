@@ -13,32 +13,38 @@ import {
 } from "@discord/components/ui/dialog";
 import { useReactHookForm } from "@discord/hooks/useReactHookForm";
 import { useEffect } from "react";
-import { createServerSchema } from "./createServerSchema";
-import { useCreateServer } from "./hooks/useCreateServer";
+import { channelSchema } from "./channelSchema";
+import { useUpdateChannel } from "./hooks/useUpdateChannel";
 
 interface FormData {
-  serverName: string;
+  name: string;
 }
 
-export const AddServerDialog = ({
+export const UpdateChannelDialog = ({
   handleOnSuccess,
   handleClick,
-  isOpen
+  isOpen,
+  channelId,
+  channelName,
 }: {
   handleOnSuccess: () => void;
   handleClick: () => void;
   isOpen: boolean;
+  channelId: string;
+  channelName: string;
 }) => {
-  const { control, handleSubmit, errors } =
-    useReactHookForm(createServerSchema);
-  const { createServer, isPending, isSuccess } = useCreateServer();
+  const { control, handleSubmit, errors } = useReactHookForm(channelSchema, {
+    name: channelName,
+  });
+  const { updateChannel, isPending, isSuccess } = useUpdateChannel();
   const onSubmit = (data: FormData) => {
-    createServer({ name: data.serverName });
+    updateChannel({ channelId, name: data.name });
   };
 
   useEffect(() => {
     if (isSuccess) {
       handleOnSuccess();
+      handleClick();
     }
   }, [isSuccess]);
 
@@ -47,10 +53,9 @@ export const AddServerDialog = ({
       <Dialog open={isOpen} onOpenChange={handleClick}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Customise your server</DialogTitle>
+            <DialogTitle>Update your channel</DialogTitle>
             <DialogDescription>
-              Give your new server a personality with a name. You can always
-              change it later.
+              Give your channel a personality with a name.
             </DialogDescription>
           </DialogHeader>
           <form
@@ -59,17 +64,17 @@ export const AddServerDialog = ({
           >
             <InputField
               control={control}
-              name="serverName"
-              label="Server Name"
+              name="name"
+              label="Channel Name"
               required
-              message={errors.serverName?.message}
+              message={errors.name?.message}
             />
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
               <Button disabled={isPending} loading={isPending}>
-                Create
+                Update
               </Button>
             </DialogFooter>
           </form>

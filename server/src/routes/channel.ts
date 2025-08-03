@@ -80,7 +80,6 @@ router.get(
   }
 );
 
-
 router.post(
   "/servers/:serverId/channels",
   authenticateToken,
@@ -101,12 +100,10 @@ router.post(
         },
       });
       if (!isMember) {
-        return res
-          .status(403)
-          .json({
-            error:
-              "You're not a member of this server or not allowed to perform this action",
-          });
+        return res.status(403).json({
+          error:
+            "You're not a member of this server or not allowed to perform this action",
+        });
       }
       const channel = await prisma.channel.create({
         data: {
@@ -157,6 +154,50 @@ router.delete(
     } catch (err) {
       console.error("Channel delete error:", err);
       res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+router.patch(
+  "/channels/:channelId",
+  authenticateToken,
+  async (req, res): Promise<any> => {
+    const userId = req.userId;
+    const { channelId } = req.params;
+    const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: "Channel name is required" });
+    }
+
+    try {
+      const channel = await prisma.channel.findUnique({
+        where: { id: channelId },
+        include: { server: true },
+      });
+
+      if (!channel) {
+        return res.status(404).json({ error: "Channel not found" });
+      }
+
+      const server = channel.server;
+
+      if (server.ownerId !== userId) {
+        return res.status(403).json({ error: "Not your server" });
+      }
+
+      const updatedChannel = await prisma.channel.update({
+        where: { id: channelId },
+        data: { name },
+      });
+
+      const io = req.app.get("io") as Server;
+      io.to(server.id).emit(Event.CHANNEL_UPDATED, updatedChannel);
+
+      return res.status(200).json(updatedChannel);
+    } catch (err) {
+      console.error("Error updating channel:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
     }
   }
 );

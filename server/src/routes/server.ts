@@ -59,9 +59,9 @@ router.get("/", authenticateToken, async (req, res): Promise<any> => {
       },
       include: {
         server: {
-          include:{
-            channels:true
-          }
+          include: {
+            channels: true,
+          },
         },
       },
     });
@@ -94,7 +94,6 @@ router.post("/join", authenticateToken, async (req, res): Promise<any> => {
       return res.status(404).json({ error: "Invalid invite code" });
     }
 
-    // Already a member?
     const existing = await prisma.member.findFirst({
       where: {
         userId,
@@ -122,5 +121,93 @@ router.post("/join", authenticateToken, async (req, res): Promise<any> => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+router.delete(
+  "/:serverId",
+  authenticateToken,
+  async (req, res): Promise<any> => {
+    const userId = req.userId;
+    const { serverId } = req.params;
+
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    try {
+      const server = await prisma.server.findUnique({
+        where: { id: serverId },
+        include: {
+          channels: true,
+        },
+      });
+
+      if (!server) {
+        return res.status(404).json({ error: "Server not found" });
+      }
+
+      if (server.ownerId !== userId) {
+        return res
+          .status(403)
+          .json({ error: "Only the owner can delete the server" });
+      }
+
+      await prisma.channel.deleteMany({ where: { serverId } });
+      await prisma.member.deleteMany({ where: { serverId } });
+      await prisma.message.deleteMany({
+        where: {
+          channelId: {
+            in: server.channels.map((channel) => channel.id),
+          },
+        },
+      });
+      await prisma.server.delete({
+        where: { id: serverId },
+      });
+
+      return res.status(200).json({ message: "Server deleted successfully" });
+    } catch (err) {
+      console.error("Delete server error:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.patch(
+  "/:serverId",
+  authenticateToken,
+  async (req, res): Promise<any> => {
+    const userId = req.userId;
+    const { serverId } = req.params;
+    const { name } = req.body;
+
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    if (!name)
+      return res.status(400).json({ error: "Server name is required" });
+
+    try {
+      const server = await prisma.server.findUnique({
+        where: { id: serverId },
+      });
+
+      if (!server) {
+        return res.status(404).json({ error: "Server not found" });
+      }
+
+      if (server.ownerId !== userId) {
+        return res
+          .status(403)
+          .json({ error: "Only the owner can update the server" });
+      }
+
+      const updated = await prisma.server.update({
+        where: { id: serverId },
+        data: { name },
+      });
+
+      return res.status(200).json(updated);
+    } catch (err) {
+      console.error("Update server error:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
 
 export default router;

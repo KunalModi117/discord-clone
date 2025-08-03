@@ -14,31 +14,38 @@ import {
 import { useReactHookForm } from "@discord/hooks/useReactHookForm";
 import { useEffect } from "react";
 import { createServerSchema } from "./createServerSchema";
-import { useCreateServer } from "./hooks/useCreateServer";
+import { useUpdateServer } from "./hooks/useUpdateServer";
 
 interface FormData {
   serverName: string;
 }
 
-export const AddServerDialog = ({
+export const UpdateServerDialog = ({
   handleOnSuccess,
   handleClick,
-  isOpen
+  isOpen,
+  serverId,
+  serverName,
 }: {
   handleOnSuccess: () => void;
   handleClick: () => void;
   isOpen: boolean;
+  serverId: string;
+  serverName: string;
 }) => {
-  const { control, handleSubmit, errors } =
-    useReactHookForm(createServerSchema);
-  const { createServer, isPending, isSuccess } = useCreateServer();
+  const { control, handleSubmit, errors } = useReactHookForm(
+    createServerSchema,
+    { serverName }
+  );
+  const { updateServer, isPending, isSuccess } = useUpdateServer();
   const onSubmit = (data: FormData) => {
-    createServer({ name: data.serverName });
+    updateServer({ serverId, name: data.serverName });
   };
 
   useEffect(() => {
     if (isSuccess) {
       handleOnSuccess();
+      handleClick();
     }
   }, [isSuccess]);
 
@@ -47,10 +54,9 @@ export const AddServerDialog = ({
       <Dialog open={isOpen} onOpenChange={handleClick}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Customise your server</DialogTitle>
+            <DialogTitle>Update your server</DialogTitle>
             <DialogDescription>
-              Give your new server a personality with a name. You can always
-              change it later.
+              Give your server a personality with a name.
             </DialogDescription>
           </DialogHeader>
           <form
@@ -69,7 +75,7 @@ export const AddServerDialog = ({
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
               <Button disabled={isPending} loading={isPending}>
-                Create
+                Update
               </Button>
             </DialogFooter>
           </form>

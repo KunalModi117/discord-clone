@@ -4,7 +4,8 @@ import { ZodType, TypeOf } from "zod";
 import { AnyType } from "../../types";
 
 export function useReactHookForm<T extends ZodType<AnyType, AnyType>>(
-  schema: T
+  schema: T,
+  initialValues?: TypeOf<T>
 ) {
   const {
     control,
@@ -14,6 +15,7 @@ export function useReactHookForm<T extends ZodType<AnyType, AnyType>>(
     reset,
   } = useForm<TypeOf<T>>({
     resolver: zodResolver(schema),
+    defaultValues: initialValues,
   });
 
   const values = watch();

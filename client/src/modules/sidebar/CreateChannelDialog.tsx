@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@discord/components/ui/dialog";
-import { useCreateChannel } from "./useCreateChannel";
+import { useCreateChannel } from "./hooks/useCreateChannel";
 import { useReactHookForm } from "@discord/hooks/useReactHookForm";
 import { channelSchema } from "./channelSchema";
 import { useEffect } from "react";

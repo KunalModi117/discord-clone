@@ -1,20 +1,23 @@
 "use client";
 
-import Link from "next/link";
-import { cn } from "@discord/lib/utils";
 import { ServersData } from "@discord/app/apis/getServers";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { cn } from "@discord/lib/utils";
 import { ChevronRight, PlusIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { ChannelItem } from "./ChannelItem";
 import { CreateChannelDialog } from "./CreateChannelDialog";
-import { useGetServers } from "@discord/hooks/useGetServers";
 
 interface ChannelListProps {
   activeServer?: ServersData;
+  handleOnSuccess: () => void;
 }
 
-export const ChannelList = ({ activeServer }: ChannelListProps) => {
-  const [server, setServer] = useState<ServersData | null>(null);
+export const ChannelList = ({
+  activeServer,
+  handleOnSuccess,
+}: ChannelListProps) => {
+  const server = activeServer;
   const [isCreateChannelDialogOpen, setIsCreateChannelDialogOpen] =
     useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -23,22 +26,9 @@ export const ChannelList = ({ activeServer }: ChannelListProps) => {
   const channel = server?.channels?.find(
     (channel) => channel.id === activeChannelId
   );
-  const { getServers, servers, isServersLoaded } = useGetServers();
-
-  useEffect(() => {
-    if (activeServer) {
-      setServer(activeServer);
-    }
-  }, [activeServer]);
-
-  useEffect(() => {
-    if (isServersLoaded) {
-      setServer(servers?.find((s) => s.id === activeServer?.id) ?? null);
-    }
-  }, [isServersLoaded]);
 
   const handleSuccess = async () => {
-    getServers();
+    handleOnSuccess();
   };
 
   return (
@@ -46,7 +36,7 @@ export const ChannelList = ({ activeServer }: ChannelListProps) => {
       <h2 className="text-lg font-bold mb-4">
         {server?.name || "No Server Selected"}
       </h2>
-      <button
+      <div
         className="text-xs text-white/50 flex justify-between w-full"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
@@ -60,33 +50,35 @@ export const ChannelList = ({ activeServer }: ChannelListProps) => {
         </span>
         <PlusIcon
           className="w-4 h-4 hover:text-white"
-          onClick={() => setIsCreateChannelDialogOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsCreateChannelDialogOpen(true);
+          }}
         />
-      </button>
+      </div>
       {!isCollapsed ? (
         <ul className="space-y-1">
           {server?.channels?.map((channel) => (
             <li key={channel.id}>
-              <Link
-                href={`/${server.id}?channelId=${channel.id}`}
-                className={cn("block py-1 px-2 hover:bg-gray-600 rounded-md", {
-                  "bg-gray-600": channel.id === activeChannelId,
-                })}
-              >
-                # {channel.name}
-              </Link>
+              <ChannelItem
+                serverId={server.id}
+                channelId={channel.id}
+                channelName={channel.name}
+                isActive={channel.id === activeChannelId}
+                handleSuccess={handleSuccess}
+              />
             </li>
           ))}
         </ul>
       ) : (
-        <Link
-          href={`/${server?.id}?channelId=${channel?.id}`}
-          className={cn("block py-1 px-2 hover:bg-gray-600 rounded-md", {
-            "bg-gray-600": channel?.id === activeChannelId,
-          })}
-        >
-          # {channel?.name}
-        </Link>
+        <ChannelItem
+          key={channel?.id}
+          serverId={server?.id}
+          channelId={channel?.id}
+          channelName={channel?.name}
+          isActive={channel?.id === activeChannelId}
+          handleSuccess={handleSuccess}
+        />
       )}
       <CreateChannelDialog
         isOpen={isCreateChannelDialogOpen}

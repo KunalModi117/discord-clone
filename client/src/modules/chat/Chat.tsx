@@ -8,6 +8,7 @@ import { MessageItem } from "./MessageItem";
 import { MessageItemSkeleton } from "./MessageItemSkeleton";
 import { formatDateDivider } from "@discord/utils/date";
 import { nanoid } from "nanoid";
+import { useGetMe } from "./useGetMe";
 
 interface ExtendedMessage extends Message {
   isTemp?: boolean;
@@ -28,12 +29,13 @@ export const Chat = () => {
     channelId: channelId || "",
   });
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { me } = useGetMe();
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
         top: scrollRef.current.scrollHeight,
-        behavior: "smooth",
+        behavior: "instant",
       });
     }
   };
@@ -47,6 +49,8 @@ export const Chat = () => {
   useEffect(() => {
     if (channelMessages?.length > 0) {
       setMessages(channelMessages);
+    } else {
+      setMessages([]);
     }
   }, [channelMessages]);
 
@@ -89,7 +93,7 @@ export const Chat = () => {
   }, [socket, channelId]);
 
   const handleSend = () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !me) return;
 
     const tempId = nanoid();
     const tempMessage: ExtendedMessage = {
@@ -97,11 +101,7 @@ export const Chat = () => {
       tempId,
       content: newMessage,
       createdAt: new Date().toISOString(),
-      user: {
-        id: "test",
-        username: "uzu",
-        email: "uzu@gmail.com",
-      },
+      user: me,
       isTemp: true,
     };
 

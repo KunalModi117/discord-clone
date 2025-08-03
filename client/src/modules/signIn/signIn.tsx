@@ -31,6 +31,8 @@ export const SignIn = () => {
     if(isServersLoaded){
       if(servers.length){
         router.push(`/${servers[0].id}?channelId=${servers[0].channels[0].id}`)
+      }else{
+        router.push("/create-server")
       }
     }
   },[isServersLoaded])

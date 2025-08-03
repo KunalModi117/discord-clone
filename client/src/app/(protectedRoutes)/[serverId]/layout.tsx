@@ -1,9 +1,8 @@
-import { getServers } from "@discord/app/apis/getServers";
 import { getMe } from "@discord/app/apis/getMe";
-import { redirect } from "next/navigation";
-import { ChannelList } from "@discord/modules/sidebar/ChannelList";
-import { Sidebar } from "@discord/modules/sidebar/Sidebar";
+import { getServers } from "@discord/app/apis/getServers";
 import { ChannelHeader } from "@discord/modules/sidebar/ChannelHeader";
+import { Sidebar } from "@discord/modules/sidebar/Sidebar";
+import { redirect } from "next/navigation";
 
 export default async function RootLayout({
   children,
@@ -22,13 +21,10 @@ export default async function RootLayout({
 
   return (
     <div className="flex text-white">
-      <aside className="max-w-[375px] w-full h-screen flex items-center space-y-4 sticky left-0 top-0">
-        <Sidebar
-          initialServers={servers || []}
-          activeServerId={activeServerId || ""}
-        />
-        <ChannelList activeServer={activeServer} />
-      </aside>
+      <Sidebar
+        initialServers={servers || []}
+        activeServerId={activeServerId || ""}
+      />
       <div className="flex flex-col bg-secondary h-full w-full">
         <ChannelHeader activeServer={activeServer} />
         <div className="w-full h-full">{children}</div>
