@@ -11,11 +11,13 @@ import { CreateChannelDialog } from "./CreateChannelDialog";
 interface ChannelListProps {
   activeServer?: ServersData;
   handleOnSuccess: () => void;
+  handleChannelClick: (open:boolean) => void;
 }
 
 export const ChannelList = ({
   activeServer,
   handleOnSuccess,
+  handleChannelClick,
 }: ChannelListProps) => {
   const server = activeServer;
   const [isCreateChannelDialogOpen, setIsCreateChannelDialogOpen] =
@@ -66,6 +68,7 @@ export const ChannelList = ({
                 channelName={channel.name}
                 isActive={channel.id === activeChannelId}
                 handleSuccess={handleSuccess}
+                handleChannelClick={handleChannelClick}
               />
             </li>
           ))}
@@ -78,6 +81,7 @@ export const ChannelList = ({
           channelName={channel?.name}
           isActive={channel?.id === activeChannelId}
           handleSuccess={handleSuccess}
+          handleChannelClick={handleChannelClick}
         />
       )}
       <CreateChannelDialog

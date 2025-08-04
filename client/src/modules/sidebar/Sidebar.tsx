@@ -24,9 +24,11 @@ import { ChannelList } from "./ChannelList";
 export const Sidebar = ({
   initialServers,
   activeServerId,
+  handleChannelClick
 }: {
   initialServers: ServersData[];
   activeServerId: string;
+  handleChannelClick:(open:boolean)=>void
 }) => {
   const [servers, setServers] = useState(initialServers);
   const [isOpen, setIsOpen] = useState(false);
@@ -50,8 +52,8 @@ export const Sidebar = ({
   };
 
   return (
-    <aside className="max-w-[375px] w-full h-screen flex items-center space-y-4 sticky left-0 top-0">
-      <div className="flex flex-col items-center py-4 space-y-4 bg-secondary h-full">
+    <aside className="max-w-[375px] w-full h-screen flex items-center sticky left-0 top-0">
+      <div className="flex flex-col items-center py-4 bg-secondary h-full gap-4">
         {servers?.map((server) => (
           <ContextMenu key={server.id}>
             <ContextMenuTrigger>
@@ -119,6 +121,7 @@ export const Sidebar = ({
       <ChannelList
         activeServer={activeServer}
         handleOnSuccess={handleOnSuccess}
+        handleChannelClick={handleChannelClick}
       />
     </aside>
   );

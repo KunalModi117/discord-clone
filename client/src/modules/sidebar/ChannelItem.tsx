@@ -17,6 +17,7 @@ interface Props {
   channelName?: string;
   isActive: boolean;
   handleSuccess: () => void;
+  handleChannelClick: (open: boolean) => void;
 }
 
 export const ChannelItem = ({
@@ -25,6 +26,7 @@ export const ChannelItem = ({
   channelName,
   isActive,
   handleSuccess,
+  handleChannelClick,
 }: Props) => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -41,6 +43,10 @@ export const ChannelItem = ({
     <>
       <Link
         href={`/${serverId}?channelId=${channelId}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleChannelClick(false);
+        }}
         className={cn(
           "flex py-1 px-2 hover:bg-gray-600 rounded-md justify-between items-center group",
           {
