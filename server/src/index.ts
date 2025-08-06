@@ -33,7 +33,7 @@ const io = new Server(server, {
 });
 app.set("io", io);
 
-io.on("connection", (socket) => {
+io.on("connection",(socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
   const cookies = parse(socket.handshake.headers.cookie || "");
@@ -82,6 +82,18 @@ io.on("connection", (socket) => {
     } catch (err) {
       console.error("❌ Error sending message:", err);
     }
+  });
+
+  socket.on("typing:start", ({ channelId }) => {
+    const userId = (socket as any).userId;
+    if (!userId) return;
+    socket.to(channelId).emit("typing:started", { userId });
+  });
+
+  socket.on("typing:stop", ({ channelId }) => {
+    const userId = (socket as any).userId;
+    if (!userId) return;
+    socket.to(channelId).emit("typing:stopped", { userId });
   });
 
   socket.on("disconnect", () => {

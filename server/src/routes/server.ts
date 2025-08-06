@@ -210,4 +210,47 @@ router.patch(
   }
 );
 
+router.get(
+  "/:serverId/members",
+  authenticateToken,
+  async (req, res): Promise<any> => {
+    const userId = req.userId;
+    const { serverId } = req.params;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    try {
+      const isMember = await prisma.member.findFirst({
+        where: { userId, serverId },
+      });
+
+      if (!isMember) {
+        return res
+          .status(403)
+          .json({ error: "You're not a member of this server" });
+      }
+
+      const members = await prisma.member.findMany({
+        where: { serverId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+        },
+      });
+
+      return res.status(200).json(members);
+    } catch (err) {
+      console.error("Error fetching members:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+
 export default router;

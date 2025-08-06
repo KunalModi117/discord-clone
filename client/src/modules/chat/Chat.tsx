@@ -9,6 +9,7 @@ import { MessageItemSkeleton } from "./MessageItemSkeleton";
 import { formatDateDivider } from "@discord/utils/date";
 import { nanoid } from "nanoid";
 import { useGetMe } from "./useGetMe";
+import { useMemberStore } from "@discord/utils/zustandStore";
 
 interface ExtendedMessage extends Message {
   isTemp?: boolean;
@@ -16,10 +17,16 @@ interface ExtendedMessage extends Message {
 }
 
 export const Chat = () => {
+  const { addTypingUser, removeTypingUser } = useMemberStore.getState();
   const [messages, setMessages] = useState<ExtendedMessage[]>([]);
+  const typingTimeoutRef = useRef<any>(null);
   const [newMessage, setNewMessage] = useState("");
   const searchParams = useSearchParams();
   const channelId = searchParams.get("channelId") ?? "";
+  const typingMap = useMemberStore((s) => s.typingUsers);
+  const typingUsers = typingMap[channelId] ?? [];
+
+  const members = useMemberStore((s) => s.members);
   const { socket } = useSocket({ channelId });
   const {
     messages: channelMessages,
@@ -62,8 +69,26 @@ export const Chat = () => {
 
   useEffect(() => {
     if (!socket) return;
+    socket.on("user:status", ({ userId, status }) => {
+      useMemberStore.getState().setStatus(userId, status);
+    });
+    return () => {
+      socket.off("user:status");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    if (!socket) return;
 
     socket.emit("join", channelId);
+
+    socket.on("typing:started", ({ userId }) => {
+      addTypingUser(channelId, userId);
+    });
+
+    socket.on("typing:stopped", ({ userId }) => {
+      removeTypingUser(channelId, userId);
+    });
 
     socket.on("message:new", (message: ExtendedMessage) => {
       setMessages((prev) => {
@@ -89,8 +114,19 @@ export const Chat = () => {
     return () => {
       socket.emit("leave", channelId);
       socket.off("message:new");
+      socket.off("typing:started");
+      socket.off("typing:stopped");
     };
   }, [socket, channelId]);
+
+  const handeleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    socket?.emit("typing:start", { channelId });
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      socket?.emit("typing:stop", { channelId });
+    }, 2000);
+  };
 
   const handleSend = () => {
     if (!newMessage.trim() || !me) return;
@@ -170,16 +206,25 @@ export const Chat = () => {
           </>
         )}
       </div>
-      <div className="w-full bg-secondary p-4 border-t border-input sticky bottom-0">
+      <div className="w-[calc(100vw-375px)] bg-secondary p-4 border-t border-input fixed bottom-0 pb-6">
         <input
           type="text"
           placeholder="Type a message..."
-          className="w-full p-2 bg-secondary rounded border border-input"
+          className="w-full p-2 bg-secondary rounded border border-input outline-none"
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={handeleInput}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
         />
       </div>
+      {typingUsers.length > 0 && (
+        <div className="text-sm text-foreground absolute bottom-0 left-4">
+          {typingUsers
+            .map((id) => members.find((m) => m.user.id === id)?.user.username)
+            .filter(Boolean)
+            .join(", ")}{" "}
+          {typingUsers.length === 1 ? "is typing..." : "are typing..."}
+        </div>
+      )}
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { ChannelHeader } from "@discord/modules/sidebar/ChannelHeader";
 import { Sidebar } from "@discord/modules/sidebar/Sidebar";
 import { Sheet, SheetContent, SheetTitle } from "./ui/sheet";
 import { useState, useEffect } from "react";
+import { MembersSidebar } from "@discord/modules/sidebar/MembersSidebar";
 
 export const LayoutFile = ({
   children,
@@ -19,11 +20,12 @@ export const LayoutFile = ({
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isShowMembers, setIsShowMembers] = useState(false);
+
+  const handleMembersClick = () => setIsShowMembers((prev) => !prev);
 
   useEffect(() => {
-    console.log('test');
-    const checkScreenSize = () =>
-      setIsMobile(window.innerWidth < 1024);
+    const checkScreenSize = () => setIsMobile(window.innerWidth < 1024);
 
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
@@ -56,9 +58,16 @@ export const LayoutFile = ({
         </div>
       )}
 
-      <div className="flex flex-col bg-secondary h-full w-full">
-        <ChannelHeader activeServer={activeServer} handleClick={openSheet} />
-        <div className="w-full h-full overflow-y-auto">{children}</div>
+      <div className="flex flex-col bg-secondary h-full w-full relative">
+        <ChannelHeader
+          activeServer={activeServer}
+          handleClick={openSheet}
+          handleMembersClick={handleMembersClick}
+        />
+        <div className="flex gap-2">
+          <div className="w-full h-full overflow-y-auto">{children}</div>
+          {isShowMembers ?<MembersSidebar activeServerId={activeServerId}/>:null}
+        </div>
       </div>
     </div>
   );
