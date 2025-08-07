@@ -1,15 +1,19 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { Message, useGetMessageByChannelId } from "./useGetMessageByChannelId";
 import { useSocket } from "@discord/hooks/useSocket";
+import { formatDateDivider } from "@discord/utils/date";
+import { UploadButton } from "@discord/utils/uploadThing";
+import { useMemberStore } from "@discord/utils/zustandStore";
+import { PlusCircle } from "lucide-react";
+import { nanoid } from "nanoid";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { MessageItem } from "./MessageItem";
 import { MessageItemSkeleton } from "./MessageItemSkeleton";
-import { formatDateDivider } from "@discord/utils/date";
-import { nanoid } from "nanoid";
 import { useGetMe } from "./useGetMe";
-import { useMemberStore } from "@discord/utils/zustandStore";
+import { Message, useGetMessageByChannelId } from "./useGetMessageByChannelId";
+import { useGetMembersByServerId } from "../sidebar/hooks/useGetMembersByServerId";
 
 interface ExtendedMessage extends Message {
   isTemp?: boolean;
@@ -17,7 +21,8 @@ interface ExtendedMessage extends Message {
 }
 
 export const Chat = () => {
-  const { addTypingUser, removeTypingUser } = useMemberStore.getState();
+  const { addTypingUser, removeTypingUser, setStatus } =
+    useMemberStore.getState();
   const [messages, setMessages] = useState<ExtendedMessage[]>([]);
   const typingTimeoutRef = useRef<any>(null);
   const [newMessage, setNewMessage] = useState("");
@@ -26,6 +31,11 @@ export const Chat = () => {
   const typingMap = useMemberStore((s) => s.typingUsers);
   const typingUsers = typingMap[channelId] ?? [];
 
+  const serverId = useMemberStore((s) => s.activeServerId);
+  const { data } = useGetMembersByServerId({
+    serverId: serverId || "",
+  });
+  const setMembers = useMemberStore((s) => s.setMembers);
   const members = useMemberStore((s) => s.members);
   const { socket } = useSocket({ channelId });
   const {
@@ -54,6 +64,12 @@ export const Chat = () => {
   };
 
   useEffect(() => {
+    if (data) {
+      setMembers(data);
+    }
+  }, [data, setMembers]);
+
+  useEffect(() => {
     if (channelMessages?.length > 0) {
       setMessages(channelMessages);
     } else {
@@ -69,18 +85,21 @@ export const Chat = () => {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on("user:status", ({ userId, status }) => {
-      useMemberStore.getState().setStatus(userId, status);
-    });
-    return () => {
-      socket.off("user:status");
-    };
-  }, [socket]);
-
-  useEffect(() => {
-    if (!socket) return;
 
     socket.emit("join", channelId);
+
+    socket.on(
+      "current:statuses",
+      (statuses: Record<string, "online" | "offline">) => {
+        for (const userId in statuses) {
+          setStatus(userId, statuses[userId]);
+        }
+      }
+    );
+
+    socket.on("user:status", ({ userId, status }) => {
+      setStatus(userId, status);
+    });
 
     socket.on("typing:started", ({ userId }) => {
       addTypingUser(channelId, userId);
@@ -98,9 +117,13 @@ export const Chat = () => {
         let updated;
         if (tempIndex !== -1) {
           updated = [...prev];
-          updated[tempIndex] = { ...message, isTemp: false };
+          updated[tempIndex] = {
+            ...message,
+            isTemp: false,
+            type: message.type || "TEXT",
+          };
         } else {
-          updated = [...prev, message];
+          updated = [...prev, { ...message, type: message.type || "TEXT" }];
         }
         setTimeout(() => {
           if (isUserNearBottom()) {
@@ -113,11 +136,13 @@ export const Chat = () => {
 
     return () => {
       socket.emit("leave", channelId);
+      socket.off("current:statuses");
+      socket.off("user:status");
       socket.off("message:new");
       socket.off("typing:started");
       socket.off("typing:stopped");
     };
-  }, [socket, channelId]);
+  }, [socket, channelId, setStatus, addTypingUser, removeTypingUser]);
 
   const handeleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
@@ -128,27 +153,38 @@ export const Chat = () => {
     }, 2000);
   };
 
-  const handleSend = () => {
-    if (!newMessage.trim() || !me) return;
+  const sendMessageToSocket = (
+    content: string,
+    type: "TEXT" | "IMAGE" | "GIF",
+    tempId: string
+  ) => {
+    if (!me || !channelId) return;
 
-    const tempId = nanoid();
     const tempMessage: ExtendedMessage = {
       id: tempId,
       tempId,
-      content: newMessage,
+      content: content,
       createdAt: new Date().toISOString(),
       user: me,
       isTemp: true,
+      type: type,
     };
 
     setMessages((prev) => [...prev, tempMessage]);
     socket?.emit("message:send", {
       channelId,
-      content: newMessage,
+      content: content,
       tempId,
+      type: type,
     });
-    setNewMessage("");
     setTimeout(scrollToBottom, 0);
+  };
+
+  const handleSend = () => {
+    if (!newMessage.trim()) return;
+    const tempId = nanoid();
+    sendMessageToSocket(newMessage, "TEXT", tempId);
+    setNewMessage("");
   };
 
   let lastDate = "";
@@ -194,23 +230,55 @@ export const Chat = () => {
                       <div className="border-t border-muted w-full"></div>
                     </div>
                   )}
-                  <div className={message.isTemp ? "opacity-70" : ""}>
-                    <MessageItem
-                      message={message}
-                      showAvatarAndName={showAvatarAndName}
-                    />
-                  </div>
+                  {message.isTemp && message.type === "IMAGE" ? (
+                    <div className="w-[200px] h-[200px] bg-gray-500 rounded-lg mt-1" />
+                  ) : (
+                    <div className={message.isTemp ? "opacity-70" : ""}>
+                      <MessageItem
+                        message={message}
+                        showAvatarAndName={showAvatarAndName}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
           </>
         )}
       </div>
-      <div className="w-[calc(100vw-375px)] bg-secondary p-4 border-t border-input fixed bottom-0 pb-6">
+      <div className="w-full lg:w-[calc(100vw-375px)] bg-secondary p-4 border-t border-input fixed bottom-0 pb-6 flex items-center gap-2">
+        <UploadButton
+          endpoint="imageAndGifUploader"
+          onClientUploadComplete={(res) => {
+            if (res && res[0]) {
+              const fileUrl = res[0].serverData.fileUrl;
+              const fileKey = res[0].serverData.fileKey;
+              const isGif = fileUrl.toLowerCase().endsWith(".gif");
+              sendMessageToSocket(fileUrl, isGif ? "GIF" : "IMAGE", fileKey);
+            }
+          }}
+          onUploadError={(error: Error) => {
+            toast.error("Something went wrong", {
+              description: error.message,
+            });
+          }}
+          className="
+            ut-button:!bg-transparent ut-button:hover:!bg-gray-700 ut-button:!p-2 ut-button:!rounded-full
+            ut-button:!border-none ut-button:!shadow-none ut-button:!w-auto ut-button:!h-auto ut-button:!aspect-square
+            ut-label:!hidden /* Hide the default 'Choose File' text */
+            ut-allowed-content:!hidden /* Hide 'Image (4MB)' text */
+          "
+          content={{
+            button: (
+              <PlusCircle className="h-6 w-6 text-secondary hover:fill-gray-200 fill-gray-400" />
+            ),
+          }}
+        />
+
         <input
           type="text"
           placeholder="Type a message..."
-          className="w-full p-2 bg-secondary rounded border border-input outline-none"
+          className="flex-grow p-2 bg-secondary rounded border border-input outline-none"
           value={newMessage}
           onChange={handeleInput}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}

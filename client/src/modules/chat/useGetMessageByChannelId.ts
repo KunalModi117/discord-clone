@@ -10,8 +10,8 @@ export interface Message {
   user: {
     id: string;
     username: string;
-    email: string;
   };
+  type: "TEXT" | "IMAGE" | "GIF";
 }
 
 export const useGetMessageByChannelId = ({

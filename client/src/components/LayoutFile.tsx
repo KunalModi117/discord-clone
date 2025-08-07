@@ -66,7 +66,7 @@ export const LayoutFile = ({
         />
         <div className="flex gap-2">
           <div className="w-full h-full overflow-y-auto">{children}</div>
-          {isShowMembers ?<MembersSidebar activeServerId={activeServerId}/>:null}
+          <MembersSidebar activeServerId={activeServerId} isShowMembers={isShowMembers}/>
         </div>
       </div>
     </div>

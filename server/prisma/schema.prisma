@@ -56,11 +56,18 @@ model Message {
   content   String
   userId    String
   channelId String
+  type      MessageType @default(TEXT)
 
   user    User    @relation(fields: [userId], references: [id])
   channel Channel @relation(fields: [channelId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  GIF
 }
 
 model Member {

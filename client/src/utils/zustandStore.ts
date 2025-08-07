@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type Status = "online" | "offline" | "idle";
+type Status = "online" | "offline"
 
 interface Member {
   id: string;
@@ -15,9 +15,13 @@ interface MemberState {
   members: Member[];
   statuses: Record<string, Status>; // userId -> status
   typingUsers: Record<string, string[]>; // channelId -> userIds[]
+  activeServerId: string | null;
+  activeChannelId: string | null;
 
   setMembers: (members: Member[]) => void;
-  setStatus: (userId: string, status: Status) => void;
+  setStatus: (userId: string, status: Status) => void; // This is the key method for status updates
+  setActiveServerId: (serverId: string | null) => void;
+  setActiveChannelId: (channelId: string | null) => void;
 
   addTypingUser: (channelId: string, userId: string) => void;
   removeTypingUser: (channelId: string, userId: string) => void;
@@ -28,6 +32,8 @@ export const useMemberStore = create<MemberState>((set) => ({
   members: [],
   statuses: {},
   typingUsers: {},
+  activeServerId: null,
+  activeChannelId: null,
 
   setMembers: (members) => set({ members }),
 
@@ -64,4 +70,7 @@ export const useMemberStore = create<MemberState>((set) => ({
     set((state) => ({
       typingUsers: { ...state.typingUsers, [channelId]: [] },
     })),
+
+  setActiveServerId: (serverId) => set({ activeServerId: serverId }),
+  setActiveChannelId: (channelId) => set({ activeChannelId: channelId }),
 }));

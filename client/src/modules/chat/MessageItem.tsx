@@ -14,6 +14,22 @@ interface MessageItemProps {
 }
 
 export function MessageItem({ message, showAvatarAndName }: MessageItemProps) {
+  const isImageOrGif = message.type === "IMAGE" || message.type === "GIF";
+  const renderContent = () => {
+    if (isImageOrGif) {
+      return (
+        <Image
+          src={message.content}
+          alt={message.type === "IMAGE" ? "Uploaded image" : "GIF"}
+          className="max-w-xs md:max-w-md lg:max-w-lg rounded-lg object-contain mt-1 max-h-[300px] w-fit"
+          width={500}
+          height={500}
+        />
+      );
+    }
+    return <p className="text-white">{message.content}</p>;
+  };
+
   return (
     <div
       className={cn(
@@ -40,13 +56,14 @@ export function MessageItem({ message, showAvatarAndName }: MessageItemProps) {
             </span>
           </div>
         )}
-        <p
-          className={cn("text-sm text-gray-200", {
-            "pl-12": !showAvatarAndName,
-          })}
+        <div
+          className={cn(
+            "text-sm text-foreground break-words whitespace-pre-wrap",
+            { "pl-12": !showAvatarAndName }
+          )}
         >
-          {message.content}
-        </p>
+          {renderContent()}
+        </div>
       </div>
     </div>
   );
