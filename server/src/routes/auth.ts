@@ -7,7 +7,7 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 router.post("/register", async (req, res): Promise<any> => {
-  const { email, username, password } = req.body;
+  const { email, username, password, avatar } = req.body;
 
   if (!email || !username || !password) {
     return res.status(400).json({ error: "All fields required" });
@@ -30,6 +30,7 @@ router.post("/register", async (req, res): Promise<any> => {
       email,
       username,
       password: hashedPassword,
+      avatar: avatar || null,
     },
   });
 

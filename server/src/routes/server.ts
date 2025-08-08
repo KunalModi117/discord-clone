@@ -239,6 +239,7 @@ router.get(
             select: {
               id: true,
               username: true,
+              avatar: true,
             },
           },
         },

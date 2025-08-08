@@ -19,6 +19,7 @@ router.get("/me", authenticateToken, async (req, res): Promise<any> => {
         id: true,
         email: true,
         username: true,
+        avatar: true,
         createdAt: true,
       },
     });

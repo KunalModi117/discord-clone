@@ -7,11 +7,13 @@ export const useCreateUser = () => {
       userName: string;
       email: string;
       password: string;
+      avatar?: string;
     }) => {
       const data = {
         username: userData.userName,
         email: userData.email,
         password: userData.password,
+        avatar: userData.avatar || undefined,
       };
       return postMethod("/auth/register", data);
     },

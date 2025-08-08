@@ -10,6 +10,7 @@ export interface Message {
   user: {
     id: string;
     username: string;
+    avatar?: string;
   };
   type: "TEXT" | "IMAGE" | "GIF";
 }

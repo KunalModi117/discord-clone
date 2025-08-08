@@ -6,6 +6,7 @@ import {
   isMessageFromToday,
 } from "@discord/utils/date";
 import { cn } from "@discord/lib/utils";
+import { Avatar } from "@discord/components/Avatar";
 
 interface MessageItemProps {
   message: Message & {
@@ -89,9 +90,13 @@ export function MessageItem({ message, showAvatarAndName }: MessageItemProps) {
       )}
     >
       {showAvatarAndName && (
-        <div className="rounded-full mt-1 w-9 h-9 border border-input flex items-center justify-center">
-          {message.user.username[0].toUpperCase()}
-        </div>
+        <Avatar
+          src={message.user.avatar}
+          alt={message.user.username}
+          username={message.user.username}
+          size="md"
+          className="mt-1"
+        />
       )}
 
       <div className="flex flex-col">

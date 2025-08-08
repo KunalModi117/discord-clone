@@ -16,6 +16,7 @@ import { useGetMembersByServerId } from "../sidebar/hooks/useGetMembersByServerI
 
 import { useUploadThing } from "@discord/utils/uploadThing";
 import { cn } from "@discord/lib/utils";
+import { Avatar } from "@discord/components/Avatar";
 
 interface TempImageMessage extends Message {
   isTemp: true;
@@ -302,9 +303,13 @@ export const Chat = () => {
         ) : (
           <>
             <div className="flex w-full flex-col gap-2 h-[calc(100vh-170px)] place-content-end">
-              <div className="rounded-full bg-gray-500 w-12 h-12 flex items-center justify-center text-3xl">
-                #
-              </div>
+              <Avatar
+                src=""
+                alt="Channel"
+                username="#"
+                size="lg"
+                className="bg-gray-500 text-white"
+              />
               <div className="text-xl text-white font-medium">Welcome!</div>
               <div className="text-sm text-white">
                 This is the start of the channel.

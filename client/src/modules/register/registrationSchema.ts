@@ -14,4 +14,5 @@ export const registrationSchema = object({
       passwordRegex,
       "Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character"
     ),
+  avatar: string().url("Invalid image url").optional().or(string().length(0)),
 });

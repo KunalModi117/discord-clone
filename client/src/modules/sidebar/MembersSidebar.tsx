@@ -5,11 +5,12 @@ import { cn } from "@discord/lib/utils";
 import { useMemberStore } from "@discord/utils/zustandStore";
 import { Crown } from "lucide-react";
 import { useEffect } from "react";
+import { Avatar } from "@discord/components/Avatar";
 
 const SkeletonItem = () => {
   return (
     <div className="flex gap-2 items-center p-1 hover:bg-gray-700 rounded-md mt-2">
-      <Skeleton className="h-8 w-8 rounded-full" />
+      <Skeleton className="h-6 w-6 rounded-full" />
       <Skeleton className="w-18 h-3" />
       <Skeleton className="w-2 h-2" />
     </div>
@@ -39,8 +40,14 @@ export const MembersSidebar = ({
           key={member.id}
           className="flex gap-2 items-center p-1 hover:bg-gray-700 rounded-md"
         >
-          <div className="rounded-full mt-1 w-8 h-8 border border-input flex items-center justify-center relative">
-            {member.user.username[0].toUpperCase()}
+          <div className="relative">
+            <Avatar
+              src={member.user.avatar}
+              alt={member.user.username}
+              username={member.user.username}
+              size="sm"
+              className="mt-1"
+            />
             <div
               className={cn(
                 "absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-background", // Increased size and added border for visibility

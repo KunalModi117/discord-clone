@@ -55,6 +55,19 @@ export const ourFileRouter = {
         fileKey: file.key,
       };
     }),
+  avatarUploader: f({
+    image: {
+      maxFileSize: "4MB",
+      maxFileCount: 1,
+    },
+  })
+    .onUploadComplete(async ({ file }) => {
+      console.log("Avatar upload complete. File URL:", file.ufsUrl);
+      return {
+        fileUrl: file.ufsUrl,
+        fileKey: file.key,
+      };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
