@@ -1,4 +1,3 @@
-// components/MessageItem.tsx
 import Image from "next/image";
 import { Message } from "./useGetMessageByChannelId";
 import {
@@ -9,25 +8,77 @@ import {
 import { cn } from "@discord/lib/utils";
 
 interface MessageItemProps {
-  message: Message;
+  message: Message & {
+    isTemp?: boolean;
+    tempId?: string;
+    uploadStatus?: "PENDING" | "UPLOADING" | "UPLOADED" | "FAILED";
+    progress?: number;
+  };
   showAvatarAndName: boolean;
 }
 
 export function MessageItem({ message, showAvatarAndName }: MessageItemProps) {
   const isImageOrGif = message.type === "IMAGE" || message.type === "GIF";
+  const isUploading = message.isTemp && message.uploadStatus === "UPLOADING";
+  const isFailed = message.isTemp && message.uploadStatus === "FAILED";
+
   const renderContent = () => {
     if (isImageOrGif) {
       return (
-        <Image
-          src={message.content}
-          alt={message.type === "IMAGE" ? "Uploaded image" : "GIF"}
-          className="max-w-xs md:max-w-md lg:max-w-lg rounded-lg object-contain mt-1 max-h-[300px] w-fit"
-          width={500}
-          height={500}
-        />
+        <div className="relative">
+          <Image
+            src={message.content}
+            alt={isImageOrGif ? "Uploaded media" : "GIF"}
+            className={cn(
+              "max-w-xs md:max-w-md lg:max-w-lg rounded-lg object-contain mt-1 max-h-[300px] w-fit",
+              { "opacity-50 blur-sm": isUploading || isFailed }
+            )}
+            width={500}
+            height={500}
+          />
+          {isUploading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white rounded-lg">
+              <div className="relative w-10 h-10 animate-spin">
+                <svg
+                  className="absolute top-0 left-0 w-full h-full"
+                  viewBox="0 0 36 36"
+                >
+                  <circle
+                    className="fill-black"
+                    cx="18"
+                    cy="18"
+                    r="15.9155"
+                    strokeWidth="3"
+                    stroke="transparent"
+                  />
+                  <circle
+                    className="fill-black"
+                    cx="18"
+                    cy="18"
+                    r="15.9155"
+                    strokeWidth="3"
+                    stroke="currentColor"
+                    strokeDasharray="110"
+                    strokeDashoffset="40"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
+          {isFailed && (
+            <div className="absolute inset-0 flex items-center justify-center bg-red-600 bg-opacity-75 text-white text-sm font-bold rounded-lg">
+              Failed to upload ❌
+            </div>
+          )}
+        </div>
       );
     }
-    return <p className="text-white">{message.content}</p>;
+    return (
+      <p className={cn("text-white", { "opacity-50": message.isTemp })}>
+        {message.content}
+      </p>
+    );
   };
 
   return (
@@ -59,7 +110,7 @@ export function MessageItem({ message, showAvatarAndName }: MessageItemProps) {
         <div
           className={cn(
             "text-sm text-foreground break-words whitespace-pre-wrap",
-            { "pl-12": !showAvatarAndName }
+            { "pl-12": !showAvatarAndName}
           )}
         >
           {renderContent()}

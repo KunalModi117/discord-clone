@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { verify } from "jsonwebtoken";
@@ -33,17 +34,23 @@ export const ourFileRouter = {
       maxFileCount: 1,
     },
   })
-    .middleware(async ({ req }) => {
+    .input(z.object({ tempID: z.string() }))
+    .middleware(async ({ req, input }) => {
       const user = await authenticateRequest(req);
 
-      return { userId: user.userId };
+      return {
+        userId: user.userId,
+        tempID: input.tempID,
+      };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("Upload complete for userId:", metadata.userId);
+      console.log("Temp ID:", metadata.tempID);
       console.log("File URL:", file.ufsUrl);
 
       return {
         uploadedBy: metadata.userId,
+        tempID: metadata.tempID,
         fileUrl: file.ufsUrl,
         fileKey: file.key,
       };

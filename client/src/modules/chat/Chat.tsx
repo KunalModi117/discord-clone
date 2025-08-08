@@ -2,7 +2,6 @@
 
 import { useSocket } from "@discord/hooks/useSocket";
 import { formatDateDivider } from "@discord/utils/date";
-import { UploadButton } from "@discord/utils/uploadThing";
 import { useMemberStore } from "@discord/utils/zustandStore";
 import { PlusCircle } from "lucide-react";
 import { nanoid } from "nanoid";
@@ -15,9 +14,22 @@ import { useGetMe } from "./useGetMe";
 import { Message, useGetMessageByChannelId } from "./useGetMessageByChannelId";
 import { useGetMembersByServerId } from "../sidebar/hooks/useGetMembersByServerId";
 
+import { useUploadThing } from "@discord/utils/uploadThing";
+import { cn } from "@discord/lib/utils";
+
+interface TempImageMessage extends Message {
+  isTemp: true;
+  tempId: string;
+  uploadStatus: "PENDING" | "UPLOADING" | "UPLOADED" | "FAILED";
+  progress?: number;
+  type: "IMAGE" | "GIF";
+}
+
 interface ExtendedMessage extends Message {
   isTemp?: boolean;
   tempId?: string;
+  uploadStatus?: "PENDING" | "UPLOADING" | "UPLOADED" | "FAILED";
+  progress?: number;
 }
 
 export const Chat = () => {
@@ -48,6 +60,58 @@ export const Chat = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { me } = useGetMe();
 
+  const { startUpload, isUploading } = useUploadThing(
+    "imageAndGifUploader",
+    {
+      onClientUploadComplete: (res: any[]) => {
+        if (res && res[0]) {
+          const fileUrl = res[0].serverData.fileUrl;
+          const fileKey = res[0].serverData.fileKey;
+          const tempId = res[0].serverData.tempID;
+          const isGif = fileUrl.toLowerCase().endsWith(".gif");
+
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.tempId === tempId
+                ? {
+                    ...msg,
+                    content: fileUrl,
+                    uploadStatus: "UPLOADED",
+                    isTemp: false,
+                  }
+                : msg
+            )
+          );
+          sendMessageToSocket(fileUrl, isGif ? "GIF" : "IMAGE", tempId);
+        }
+      },
+      onUploadError: (error: Error) => {
+        toast.error("Something went wrong with upload", {
+          description: error.message,
+        });
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.isTemp && msg.uploadStatus === "UPLOADING"
+              ? { ...msg, uploadStatus: "FAILED" }
+              : msg
+          )
+        );
+      },
+      onUploadBegin: (fileName) => {
+        console.log("Upload began for:", fileName);
+      },
+      onUploadProgress: (p) => {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.isTemp && msg.uploadStatus === "UPLOADING"
+              ? { ...msg, progress: p }
+              : msg
+          )
+        );
+      },
+    }
+  );
+
   const scrollToBottom = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
@@ -71,7 +135,9 @@ export const Chat = () => {
 
   useEffect(() => {
     if (channelMessages?.length > 0) {
-      setMessages(channelMessages);
+      setMessages(
+        channelMessages.map((msg) => ({ ...msg, type: msg.type || "TEXT" }))
+      );
     } else {
       setMessages([]);
     }
@@ -159,32 +225,67 @@ export const Chat = () => {
     tempId: string
   ) => {
     if (!me || !channelId) return;
-
-    const tempMessage: ExtendedMessage = {
-      id: tempId,
-      tempId,
-      content: content,
-      createdAt: new Date().toISOString(),
-      user: me,
-      isTemp: true,
-      type: type,
-    };
-
-    setMessages((prev) => [...prev, tempMessage]);
     socket?.emit("message:send", {
       channelId,
       content: content,
       tempId,
       type: type,
     });
-    setTimeout(scrollToBottom, 0);
   };
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
     const tempId = nanoid();
     sendMessageToSocket(newMessage, "TEXT", tempId);
+
+    const tempMessage: ExtendedMessage = {
+      id: tempId,
+      tempId,
+      content: newMessage,
+      createdAt: new Date().toISOString(),
+      user: me!,
+      isTemp: true,
+      type: "TEXT",
+    };
+    setMessages((prev) => [...prev, tempMessage]);
+    setTimeout(scrollToBottom, 0);
+
     setNewMessage("");
+  };
+
+  const handleFileSelect = async (files: File[]) => {
+    if (!me || !channelId || files.length === 0) return;
+
+    const file = files[0];
+    const tempId = nanoid();
+    const isGif = file.type === "image/gif";
+
+    const tempMessage: TempImageMessage = {
+      id: tempId,
+      tempId,
+      content: URL.createObjectURL(file),
+      createdAt: new Date().toISOString(),
+      user: me,
+      isTemp: true,
+      type: isGif ? "GIF" : "IMAGE",
+      uploadStatus: "UPLOADING",
+      progress: 0,
+    };
+
+    setMessages((prev) => [...prev, tempMessage]);
+    setTimeout(scrollToBottom, 0);
+
+    try {
+      await startUpload(files, { tempID: tempId });
+    } catch (error) {
+      console.error("Error initiating upload:", error);
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.tempId === tempId ? { ...msg, uploadStatus: "FAILED" } : msg
+        )
+      );
+      toast.error("Failed to start upload", { description: error as string });
+    }
   };
 
   let lastDate = "";
@@ -230,16 +331,10 @@ export const Chat = () => {
                       <div className="border-t border-muted w-full"></div>
                     </div>
                   )}
-                  {message.isTemp && message.type === "IMAGE" ? (
-                    <div className="w-[200px] h-[200px] bg-gray-500 rounded-lg mt-1" />
-                  ) : (
-                    <div className={message.isTemp ? "opacity-70" : ""}>
-                      <MessageItem
-                        message={message}
-                        showAvatarAndName={showAvatarAndName}
-                      />
-                    </div>
-                  )}
+                  <MessageItem
+                    message={message}
+                    showAvatarAndName={showAvatarAndName}
+                  />
                 </div>
               );
             })}
@@ -247,32 +342,35 @@ export const Chat = () => {
         )}
       </div>
       <div className="w-full lg:w-[calc(100vw-375px)] bg-secondary p-4 border-t border-input fixed bottom-0 pb-6 flex items-center gap-2">
-        <UploadButton
-          endpoint="imageAndGifUploader"
-          onClientUploadComplete={(res) => {
-            if (res && res[0]) {
-              const fileUrl = res[0].serverData.fileUrl;
-              const fileKey = res[0].serverData.fileKey;
-              const isGif = fileUrl.toLowerCase().endsWith(".gif");
-              sendMessageToSocket(fileUrl, isGif ? "GIF" : "IMAGE", fileKey);
+        <label htmlFor="file-upload" className="cursor-pointer">
+          <div
+            className="
+              ut-button:!bg-transparent ut-button:hover:!bg-gray-700 ut-button:!p-2 ut-button:!rounded-full
+              ut-button:!border-none ut-button:!shadow-none ut-button:!w-auto ut-button:!h-auto ut-button:!aspect-square
+              ut-label:!hidden ut-allowed-content:!hidden
+            "
+          >
+            <PlusCircle
+              className={cn(
+                "h-6 w-6 text-secondary hover:fill-gray-200 fill-gray-400",
+                { "cursor-not-allowed opacity-50": isUploading }
+              )}
+            />
+          </div>
+        </label>
+        <input
+          id="file-upload"
+          type="file"
+          accept="image/*"
+          multiple={false}
+          disabled={isUploading}
+          onChange={(e) => {
+            if (e.target.files) {
+              handleFileSelect(Array.from(e.target.files));
+              e.target.value = "";
             }
           }}
-          onUploadError={(error: Error) => {
-            toast.error("Something went wrong", {
-              description: error.message,
-            });
-          }}
-          className="
-            ut-button:!bg-transparent ut-button:hover:!bg-gray-700 ut-button:!p-2 ut-button:!rounded-full
-            ut-button:!border-none ut-button:!shadow-none ut-button:!w-auto ut-button:!h-auto ut-button:!aspect-square
-            ut-label:!hidden /* Hide the default 'Choose File' text */
-            ut-allowed-content:!hidden /* Hide 'Image (4MB)' text */
-          "
-          content={{
-            button: (
-              <PlusCircle className="h-6 w-6 text-secondary hover:fill-gray-200 fill-gray-400" />
-            ),
-          }}
+          className="hidden"
         />
 
         <input
