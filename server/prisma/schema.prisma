@@ -32,6 +32,7 @@ model Server {
   name       String
   ownerId    String
   inviteCode String @unique
+  image      String?
 
   owner    User      @relation("OwnedServers", fields: [ownerId], references: [id])
   channels Channel[]

@@ -20,6 +20,7 @@ import { useState } from "react";
 import { DeleteServerDialog } from "./DeleteServerDialog";
 import { UpdateServerDialog } from "./UpdateServerDialog";
 import { ChannelList } from "./ChannelList";
+import { Avatar } from "@discord/components/Avatar";
 
 export const Sidebar = ({
   initialServers,
@@ -32,18 +33,18 @@ export const Sidebar = ({
 }) => {
   const [servers, setServers] = useState(initialServers);
   const [isOpen, setIsOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [deleteModalServerId, setDeleteModalServerId] = useState<string | null>(null);
+  const [updateModalServerId, setUpdateModalServerId] = useState<string | null>(null);
   const activeServer = servers?.find((s) => s.id === activeServerId);
 
   const handleClick = () => {
     setIsOpen((prev) => !prev);
   };
-  const handleUpdateModal = () => {
-    setIsUpdateModalOpen((prev) => !prev);
+  const handleUpdateModal = (serverId: string) => {
+    setUpdateModalServerId(updateModalServerId === serverId ? null : serverId);
   };
-  const handleDeleteModal = () => {
-    setIsDeleteModalOpen((prev) => !prev);
+  const handleDeleteModal = (serverId: string) => {
+    setDeleteModalServerId(deleteModalServerId === serverId ? null : serverId);
   };
 
   const handleOnSuccess = async () => {
@@ -67,9 +68,20 @@ export const Sidebar = ({
                   <TooltipTrigger>
                     <Link
                       href={`/${server.id}?channelId=${server.channels[0].id}`}
-                      className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-gray-500 bg-gray-500 mx-4"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center hover:bg-gray-500 bg-gray-500 mx-4 overflow-hidden"
                     >
-                      {server.name[0]}
+                      {server.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={server.image}
+                          alt={server.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-white font-medium">
+                          {server.name[0].toUpperCase()}
+                        </span>
+                      )}
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent side="right">{server.name}</TooltipContent>
@@ -77,12 +89,12 @@ export const Sidebar = ({
               </div>
             </ContextMenuTrigger>
             <ContextMenuContent>
-              <ContextMenuItem onClick={handleUpdateModal}>
+              <ContextMenuItem onClick={() => handleUpdateModal(server.id)}>
                 Update Server
               </ContextMenuItem>
               <ContextMenuItem
                 className="flex gap-2"
-                onClick={handleDeleteModal}
+                onClick={() => handleDeleteModal(server.id)}
               >
                 <span>Delete Server</span>
                 <DeleteIcon />
@@ -90,15 +102,16 @@ export const Sidebar = ({
             </ContextMenuContent>
             <UpdateServerDialog
               handleOnSuccess={handleOnSuccess}
-              handleClick={handleUpdateModal}
-              isOpen={isUpdateModalOpen}
+              handleClick={() => handleUpdateModal(server.id)}
+              isOpen={updateModalServerId === server.id}
               serverId={server.id}
               serverName={server.name}
+              serverImage={server.image}
             />
             <DeleteServerDialog
               handleOnSuccess={handleOnSuccess}
-              handleClick={handleDeleteModal}
-              isOpen={isDeleteModalOpen}
+              handleClick={() => handleDeleteModal(server.id)}
+              isOpen={deleteModalServerId === server.id}
               serverId={server.id}
               serverName={server.name}
             />

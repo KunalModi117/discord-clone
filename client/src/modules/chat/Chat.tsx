@@ -3,7 +3,7 @@
 import { useSocket } from "@discord/hooks/useSocket";
 import { formatDateDivider } from "@discord/utils/date";
 import { useMemberStore } from "@discord/utils/zustandStore";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, UploadCloud } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -24,6 +24,7 @@ interface TempImageMessage extends Message {
   uploadStatus: "PENDING" | "UPLOADING" | "UPLOADED" | "FAILED";
   progress?: number;
   type: "IMAGE" | "GIF";
+  localFile?: File;
 }
 
 interface ExtendedMessage extends Message {
@@ -39,6 +40,7 @@ export const Chat = () => {
   const [messages, setMessages] = useState<ExtendedMessage[]>([]);
   const typingTimeoutRef = useRef<any>(null);
   const [newMessage, setNewMessage] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
   const searchParams = useSearchParams();
   const channelId = searchParams.get("channelId") ?? "";
   const typingMap = useMemberStore((s) => s.typingUsers);
@@ -79,6 +81,7 @@ export const Chat = () => {
                     content: fileUrl,
                     uploadStatus: "UPLOADED",
                     isTemp: false,
+                    progress: 100,
                   }
                 : msg
             )
@@ -271,6 +274,7 @@ export const Chat = () => {
       type: isGif ? "GIF" : "IMAGE",
       uploadStatus: "UPLOADING",
       progress: 0,
+      localFile: file,
     };
 
     setMessages((prev) => [...prev, tempMessage]);
@@ -289,12 +293,66 @@ export const Chat = () => {
     }
   };
 
+  const cancelUpload = (tempId: string) => {
+    setMessages((prev) => {
+      const msg = prev.find((m) => m.tempId === tempId && m.isTemp);
+      if (msg && msg.type !== "TEXT" && msg.content.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(msg.content);
+        } catch {}
+      }
+      return prev.filter((m) => m.tempId !== tempId);
+    });
+  };
+
+  const retryUpload = async (tempId: string) => {
+    const target = messages.find((m) => m.tempId === tempId && m.isTemp) as
+      | TempImageMessage
+      | undefined;
+    if (!target || !target.localFile) return;
+    // Reset state to uploading
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.tempId === tempId
+          ? { ...m, uploadStatus: "UPLOADING", progress: 0 }
+          : m
+      )
+    );
+    try {
+      await startUpload([target.localFile], { tempID: tempId });
+    } catch (error) {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.tempId === tempId ? { ...m, uploadStatus: "FAILED" } : m
+        )
+      );
+    }
+  };
+
   let lastDate = "";
   return (
     <div className="flex flex-col h-full">
       <div
-        className="overflow-y-scroll p-4 gap-4 h-[calc(100vh-136px)]"
+        className={cn(
+          "overflow-y-scroll p-4 gap-4 h-[calc(100vh-136px)]",
+          isDragging && "ring-2 ring-primary/50 ring-offset-2 ring-offset-background"
+        )}
         ref={scrollRef}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={(e) => {
+          if (e.currentTarget === e.target) setIsDragging(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          const dtFiles = Array.from(e.dataTransfer.files || []);
+          if (dtFiles.length > 0) {
+            handleFileSelect(dtFiles);
+          }
+        }}
       >
         {isLoading ? (
           Array.from({ length: 10 }).map((_, i) => (
@@ -339,6 +397,8 @@ export const Chat = () => {
                   <MessageItem
                     message={message}
                     showAvatarAndName={showAvatarAndName}
+                    onCancelUpload={cancelUpload}
+                    onRetryUpload={retryUpload}
                   />
                 </div>
               );
@@ -385,7 +445,21 @@ export const Chat = () => {
           value={newMessage}
           onChange={handeleInput}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          onPaste={(e) => {
+            const files = Array.from(e.clipboardData?.files ?? []);
+            if (files.length > 0) {
+              e.preventDefault();
+              handleFileSelect(files);
+            }
+          }}
         />
+        {isDragging && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/90 border border-primary/40 text-sm text-foreground">
+              <UploadCloud className="h-4 w-4" /> Drop image to upload
+            </div>
+          </div>
+        )}
       </div>
       {typingUsers.length > 0 && (
         <div className="text-sm text-foreground absolute bottom-0 left-4">

@@ -8,8 +8,8 @@ export const useUpdateServer = () => {
     isPending,
     isSuccess,
   } = useMutation({
-    mutationFn: ({ serverId, name }: { serverId: string; name: string }) => {
-      const res = patchMethod(`/servers/${serverId}`, { name });
+    mutationFn: ({ serverId, name, image }: { serverId: string; name: string; image?: string }) => {
+      const res = patchMethod(`/servers/${serverId}`, { name, image });
       return res;
     },
     onSuccess: () => {

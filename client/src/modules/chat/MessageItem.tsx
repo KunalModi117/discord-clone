@@ -6,6 +6,7 @@ import {
   isMessageFromToday,
 } from "@discord/utils/date";
 import { cn } from "@discord/lib/utils";
+import { X, RefreshCcw } from "lucide-react";
 import { Avatar } from "@discord/components/Avatar";
 
 interface MessageItemProps {
@@ -16,9 +17,11 @@ interface MessageItemProps {
     progress?: number;
   };
   showAvatarAndName: boolean;
+  onCancelUpload?: (tempId: string) => void;
+  onRetryUpload?: (tempId: string) => void;
 }
 
-export function MessageItem({ message, showAvatarAndName }: MessageItemProps) {
+export function MessageItem({ message, showAvatarAndName, onCancelUpload, onRetryUpload }: MessageItemProps) {
   const isImageOrGif = message.type === "IMAGE" || message.type === "GIF";
   const isUploading = message.isTemp && message.uploadStatus === "UPLOADING";
   const isFailed = message.isTemp && message.uploadStatus === "FAILED";
@@ -26,50 +29,58 @@ export function MessageItem({ message, showAvatarAndName }: MessageItemProps) {
   const renderContent = () => {
     if (isImageOrGif) {
       return (
-        <div className="relative">
+        <div className="relative group">
           <Image
             src={message.content}
             alt={isImageOrGif ? "Uploaded media" : "GIF"}
             className={cn(
-              "max-w-xs md:max-w-md lg:max-w-lg rounded-lg object-contain mt-1 max-h-[300px] w-fit",
-              { "opacity-50 blur-sm": isUploading || isFailed }
+              "max-w-xs md:max-w-md lg:max-w-lg rounded-lg object-cover mt-1 max-h-[320px] w-fit",
+              { "opacity-90": isUploading },
+              { "ring-2 ring-red-500": isFailed }
             )}
             width={500}
             height={500}
           />
+
           {isUploading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white rounded-lg">
-              <div className="relative w-10 h-10 animate-spin">
-                <svg
-                  className="absolute top-0 left-0 w-full h-full"
-                  viewBox="0 0 36 36"
-                >
-                  <circle
-                    className="fill-black"
-                    cx="18"
-                    cy="18"
-                    r="15.9155"
-                    strokeWidth="3"
-                    stroke="transparent"
+            <>
+              <div className="absolute inset-0 rounded-lg bg-black/30" />
+              <div className="absolute left-3 bottom-3 right-12">
+                <div className="h-2 w-full rounded bg-white/20 overflow-hidden">
+                  <div
+                    className="h-full bg-white/90 transition-all"
+                    style={{ width: `${Math.min(100, Math.max(0, message.progress ?? 0))}%` }}
                   />
-                  <circle
-                    className="fill-black"
-                    cx="18"
-                    cy="18"
-                    r="15.9155"
-                    strokeWidth="3"
-                    stroke="currentColor"
-                    strokeDasharray="110"
-                    strokeDashoffset="40"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                </div>
+                <div className="mt-1 text-xs text-white/90">
+                  Uploading {Math.round(message.progress ?? 0)}%
+                </div>
               </div>
-            </div>
+              {message.tempId && (
+                <button
+                  aria-label="Cancel upload"
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white opacity-90 hover:bg-black/80"
+                  onClick={() => onCancelUpload?.(message.tempId!)}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </>
           )}
+
           {isFailed && (
-            <div className="absolute inset-0 flex items-center justify-center bg-red-600 bg-opacity-75 text-white text-sm font-bold rounded-lg">
-              Failed to upload ❌
+            <div className="absolute inset-0 rounded-lg bg-red-600/30 backdrop-blur-[1px] flex items-center justify-center">
+              <div className="flex items-center gap-2 bg-background/90 px-3 py-1.5 rounded-full border border-red-500/50">
+                <span className="text-xs text-red-200">Upload failed</span>
+                {message.tempId && (
+                  <button
+                    className="text-xs flex items-center gap-1 px-2 py-1 rounded bg-red-500/80 hover:bg-red-500 text-white"
+                    onClick={() => onRetryUpload?.(message.tempId!)}
+                  >
+                    <RefreshCcw className="h-3 w-3" /> Retry
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>

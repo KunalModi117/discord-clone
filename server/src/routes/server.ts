@@ -8,7 +8,7 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 router.post("/", authenticateToken, async (req, res): Promise<any> => {
-  const { name } = req.body;
+  const { name, image } = req.body;
   const userId = req.userId;
 
   if (!userId) {
@@ -23,6 +23,7 @@ router.post("/", authenticateToken, async (req, res): Promise<any> => {
         name,
         ownerId: userId,
         inviteCode,
+        image: image || null,
       },
     });
 
@@ -176,7 +177,7 @@ router.patch(
   async (req, res): Promise<any> => {
     const userId = req.userId;
     const { serverId } = req.params;
-    const { name } = req.body;
+    const { name, image } = req.body;
 
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
     if (!name)
@@ -199,7 +200,7 @@ router.patch(
 
       const updated = await prisma.server.update({
         where: { id: serverId },
-        data: { name },
+        data: { name, image: image || null },
       });
 
       return res.status(200).json(updated);

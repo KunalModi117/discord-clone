@@ -14,6 +14,7 @@ interface Channel {
     name: string;
     ownerId: string;
     inviteCode: string;
+    image?: string;
     createdAt: string;
     channels: Channel[];
   }
