@@ -89,6 +89,7 @@ router.post("/join", authenticateToken, async (req, res): Promise<any> => {
   try {
     const server = await prisma.server.findUnique({
       where: { inviteCode },
+      include: { channels: true },
     });
 
     if (!server) {

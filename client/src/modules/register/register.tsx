@@ -12,6 +12,7 @@ import { routePath } from "@discord/utils/routePath";
 import { useUploadThing } from "@discord/utils/uploadThing";
 import { cn } from "@discord/lib/utils";
 import { ImagePlus, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 interface FormData {
   userName: string;
@@ -137,11 +138,20 @@ export const Register = () => {
             name="password"
             message={errors.password?.message}
             label="Password"
+            type="password"
             required
           />
-          <Button className="w-full" loading={isPending || isUploading} disabled={isUploading}>
-            Create account
-          </Button>
+          <div className="flex flex-col gap-2 w-full">
+            <Button className="w-full" loading={isPending || isUploading} disabled={isUploading}>
+              Create account
+            </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              Already have an account? {" "}
+              <Link href={routePath.signIn} className="text-primary hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>

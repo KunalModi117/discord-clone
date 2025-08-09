@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { signInSchema } from "./signInSchema";
 import { useSignIn } from "./useSignIn";
 import { useGetServers } from "@discord/hooks/useGetServers";
+import Link from "next/link";
+import { routePath } from "@discord/utils/routePath";
 
 interface FormData {
   email: string;
@@ -63,11 +65,20 @@ export const SignIn = () => {
             name="password"
             message={errors.password?.message}
             label="Password"
+            type="password"
             required
           />
-          <Button className="w-full" loading={isPending || isServersLoading}>
-            Sign in
-          </Button>
+          <div className="flex flex-col gap-2 w-full">
+            <Button className="w-full" loading={isPending || isServersLoading}>
+              Sign in
+            </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              Don&apos;t have an account? {" "}
+              <Link href={routePath.register} className="text-primary hover:underline">
+                Create one
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>

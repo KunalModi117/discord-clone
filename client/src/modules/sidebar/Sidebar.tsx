@@ -20,7 +20,7 @@ import { useState } from "react";
 import { DeleteServerDialog } from "./DeleteServerDialog";
 import { UpdateServerDialog } from "./UpdateServerDialog";
 import { ChannelList } from "./ChannelList";
-import { Avatar } from "@discord/components/Avatar";
+import { ShareInviteDialog } from "./ShareInviteDialog";
 
 export const Sidebar = ({
   initialServers,
@@ -36,6 +36,9 @@ export const Sidebar = ({
   const [deleteModalServerId, setDeleteModalServerId] = useState<string | null>(null);
   const [updateModalServerId, setUpdateModalServerId] = useState<string | null>(null);
   const activeServer = servers?.find((s) => s.id === activeServerId);
+  const [shareInviteServerId, setShareInviteServerId] = useState<string | null>(
+    null
+  );
 
   const handleClick = () => {
     setIsOpen((prev) => !prev);
@@ -45,6 +48,9 @@ export const Sidebar = ({
   };
   const handleDeleteModal = (serverId: string) => {
     setDeleteModalServerId(deleteModalServerId === serverId ? null : serverId);
+  };
+  const handleShareInvite = (serverId: string) => {
+    setShareInviteServerId(shareInviteServerId === serverId ? null : serverId);
   };
 
   const handleOnSuccess = async () => {
@@ -99,6 +105,9 @@ export const Sidebar = ({
                 <span>Delete Server</span>
                 <DeleteIcon />
               </ContextMenuItem>
+              <ContextMenuItem onClick={() => handleShareInvite(server.id)}>
+                Share Invite Code
+              </ContextMenuItem>
             </ContextMenuContent>
             <UpdateServerDialog
               handleOnSuccess={handleOnSuccess}
@@ -113,6 +122,12 @@ export const Sidebar = ({
               handleClick={() => handleDeleteModal(server.id)}
               isOpen={deleteModalServerId === server.id}
               serverId={server.id}
+              serverName={server.name}
+            />
+            <ShareInviteDialog
+              isOpen={shareInviteServerId === server.id}
+              handleClick={() => handleShareInvite(server.id)}
+              inviteCode={server.inviteCode}
               serverName={server.name}
             />
           </ContextMenu>
