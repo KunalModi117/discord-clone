@@ -48,16 +48,16 @@ export const ChannelItem = ({
           handleChannelClick(false);
         }}
         className={cn(
-          "flex py-1 px-2 hover:bg-gray-600 rounded-md justify-between items-center group",
+          "flex items-center justify-between px-2 py-1 rounded hover:bg-white/5 transition-colors",
           {
-            "bg-gray-500": isActive,
+            "bg-white/10 text-white": isActive,
           }
         )}
       >
-        <span># {channelName}</span>
+        <span className={cn("text-sm text-white/80 group-hover:text-white transition-colors", {"text-white": isActive})}># {channelName}</span>
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Settings className="w-4 h-4 text-white hidden group-hover:block" />
+            <Settings className="w-4 h-4 text-white/70 hover:text-white" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel onClick={handleUpdateModal}>

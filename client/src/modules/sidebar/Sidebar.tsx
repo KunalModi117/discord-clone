@@ -60,7 +60,7 @@ export const Sidebar = ({
 
   return (
     <aside className="max-w-[375px] w-full h-screen flex items-center sticky left-0 top-0">
-      <div className="flex flex-col items-center py-4 bg-secondary h-full gap-4">
+      <div className="flex flex-col items-center py-4 bg-secondary/50 h-full gap-4">
         {servers?.map((server) => (
           <ContextMenu key={server.id}>
             <ContextMenuTrigger>

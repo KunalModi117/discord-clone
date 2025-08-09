@@ -100,7 +100,7 @@ export function MessageItem({ message, showAvatarAndName, onCancelUpload, onRetr
         { "mt-4": showAvatarAndName }
       )}
     >
-      {showAvatarAndName && (
+      {showAvatarAndName ? (
         <Avatar
           src={message.user.avatar}
           alt={message.user.username}
@@ -108,6 +108,8 @@ export function MessageItem({ message, showAvatarAndName, onCancelUpload, onRetr
           size="md"
           className="mt-1"
         />
+      ) : (
+        <div className="w-8" />
       )}
 
       <div className="flex flex-col">
@@ -123,11 +125,7 @@ export function MessageItem({ message, showAvatarAndName, onCancelUpload, onRetr
             </span>
           </div>
         )}
-        <div
-          className={cn(
-            "text-sm text-foreground break-words whitespace-pre-wrap",
-            { "pl-12": !showAvatarAndName}
-          )}
+        <div className={cn("text-sm text-foreground break-words whitespace-pre-wrap")}
         >
           {renderContent()}
         </div>

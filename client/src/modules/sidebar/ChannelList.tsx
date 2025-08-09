@@ -34,24 +34,24 @@ export const ChannelList = ({
   };
 
   return (
-    <aside className="max-w-[303px] w-full bg-secondary/50 p-4 sticky left-0 top-0 h-full flex flex-col gap-2">
-      <h2 className="text-lg font-bold mb-4">
+    <aside className="max-w-[303px] w-full bg-card p-3 sticky left-0 top-0 h-full flex flex-col gap-2 border-r border-input/50">
+      <h2 className="text-sm font-semibold text-white/80 mb-2 px-1">
         {server?.name || "No Server Selected"}
       </h2>
       <div
-        className="text-xs text-white/50 flex justify-between w-full"
+        className="text-[11px] uppercase tracking-wide text-white/40 hover:text-white/60 flex justify-between w-full px-1 cursor-pointer select-none"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
-        <span className="flex gap-4 hover:text-white">
-          Text channels
+        <span className="flex items-center gap-1.5">
           <ChevronRight
-            className={cn("w-4 h-4 transition-all", {
+            className={cn("w-3.5 h-3.5 transition-transform", {
               "rotate-90": !isCollapsed,
             })}
           />
+          Text Channels
         </span>
         <PlusIcon
-          className="w-4 h-4 hover:text-white"
+          className="w-4 h-4 text-white/60 hover:text-white"
           onClick={(e) => {
             e.stopPropagation();
             setIsCreateChannelDialogOpen(true);
@@ -59,7 +59,7 @@ export const ChannelList = ({
         />
       </div>
       {!isCollapsed ? (
-        <ul className="space-y-1">
+        <ul className="mt-1 space-y-1">
           {server?.channels?.map((channel) => (
             <li key={channel.id}>
               <ChannelItem
