@@ -1,7 +1,7 @@
 import { getMe } from "@discord/app/apis/getMe";
 import { getServers } from "@discord/app/apis/getServers";
 import { LayoutFile } from "@discord/components/LayoutFile";
-import { redirect } from "next/navigation";
+// import { redirect } from "next/navigation";
 
 export default async function RootLayout({
   children,
