@@ -9,17 +9,14 @@ import { MembersSidebar } from "@discord/modules/sidebar/MembersSidebar";
 import { useGetMe } from "@discord/modules/chat/useGetMe";
 import { redirect } from "next/navigation";
 import { Loader } from "./Loader/Loader";
+import { useGetServers } from "@discord/hooks/useGetServers";
 
 export const LayoutFile = ({
   children,
-  servers,
   activeServerId,
-  activeServer,
 }: {
   children: React.ReactNode;
-  servers: ServersData[] | null;
   activeServerId?: string;
-  activeServer?: ServersData;
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -27,6 +24,8 @@ export const LayoutFile = ({
 
   const handleMembersClick = () => setIsShowMembers((prev) => !prev);
   const { me, isLoading } = useGetMe();
+  const { servers } = useGetServers();
+  const activeServer = servers?.find((s) => s.id === activeServerId);
 
   useEffect(() => {
     if (!isLoading && !me) {
