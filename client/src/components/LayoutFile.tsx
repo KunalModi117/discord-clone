@@ -26,13 +26,13 @@ export const LayoutFile = ({
   const [isShowMembers, setIsShowMembers] = useState(false);
 
   const handleMembersClick = () => setIsShowMembers((prev) => !prev);
-  const { me, isLoading} = useGetMe();
+  const { me, isLoading } = useGetMe();
 
   useEffect(() => {
-    if (!me) {
+    if (!isLoading && !me) {
       redirect("/sign-in");
     }
-  }, [me]);
+  }, [isLoading, me]);
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth < 1024);
@@ -44,6 +44,14 @@ export const LayoutFile = ({
 
   if (isLoading) {
     return <Loader />;
+  }
+
+  if (!me) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        You're not authorized to access this page
+      </div>
+    );
   }
 
   const openSheet = () => setIsOpen(true);
