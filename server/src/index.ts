@@ -13,11 +13,12 @@ import channelRoutes from "./routes/channel";
 import messageRoutes from "./routes/message";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.ORIGIN,
     credentials: true,
   })
 );
@@ -26,7 +27,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.ORIGIN,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -150,6 +151,6 @@ app.use("/servers", serverRoutes);
 app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
 
-server.listen(5000, () => {
-  console.log("Backend + Socket.IO running on http://localhost:5000");
+server.listen(PORT, () => {
+  console.log(`Backend + Socket.IO running on ${PORT}`);
 });
