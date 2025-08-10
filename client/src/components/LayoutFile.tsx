@@ -6,6 +6,9 @@ import { Sidebar } from "@discord/modules/sidebar/Sidebar";
 import { Sheet, SheetContent, SheetTitle } from "./ui/sheet";
 import { useState, useEffect } from "react";
 import { MembersSidebar } from "@discord/modules/sidebar/MembersSidebar";
+import { useGetMe } from "@discord/modules/chat/useGetMe";
+import { redirect } from "next/navigation";
+import { Loader } from "./Loader/Loader";
 
 export const LayoutFile = ({
   children,
@@ -23,6 +26,13 @@ export const LayoutFile = ({
   const [isShowMembers, setIsShowMembers] = useState(false);
 
   const handleMembersClick = () => setIsShowMembers((prev) => !prev);
+  const { me, isLoading} = useGetMe();
+
+  useEffect(() => {
+    if (!me) {
+      redirect("/sign-in");
+    }
+  }, [me]);
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth < 1024);
@@ -31,6 +41,10 @@ export const LayoutFile = ({
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   const openSheet = () => setIsOpen(true);
   const handleSheet = (open: boolean) => setIsOpen(open);
@@ -66,7 +80,10 @@ export const LayoutFile = ({
         />
         <div className="flex gap-2">
           <div className="w-full h-full overflow-y-auto">{children}</div>
-          <MembersSidebar activeServerId={activeServerId} isShowMembers={isShowMembers}/>
+          <MembersSidebar
+            activeServerId={activeServerId}
+            isShowMembers={isShowMembers}
+          />
         </div>
       </div>
     </div>
