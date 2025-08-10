@@ -1,6 +1,5 @@
 "use client";
 
-import { ServersData } from "@discord/app/apis/getServers";
 import { ChannelHeader } from "@discord/modules/sidebar/ChannelHeader";
 import { Sidebar } from "@discord/modules/sidebar/Sidebar";
 import { Sheet, SheetContent, SheetTitle } from "./ui/sheet";
