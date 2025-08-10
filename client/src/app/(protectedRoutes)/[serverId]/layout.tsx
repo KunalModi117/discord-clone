@@ -11,7 +11,8 @@ export default async function RootLayout({
   params: Promise<{ serverId?: string }>;
 }) {
   const me = await getMe();
-  if (!me) redirect("/sign-in");
+  console.log(":me api calls response here - >: ", me, " :me response ends here:");
+  // if (!me) redirect("/sign-in");
 
   const servers = await getServers();
   const { serverId } = await params;
