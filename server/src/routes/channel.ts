@@ -145,6 +145,11 @@ router.delete(
       if (server?.ownerId !== userId)
         return res.status(403).json({ error: "Not your server" });
 
+      await prisma.message.deleteMany({
+        where: {
+          channelId,
+        },
+      });
       await prisma.channel.delete({ where: { id: channelId } });
 
       const io = req.app.get("io") as Server;

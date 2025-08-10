@@ -23,7 +23,12 @@ export const LayoutFile = ({
 
   const handleMembersClick = () => setIsShowMembers((prev) => !prev);
   const { me, isLoading } = useGetMe();
-  const { servers } = useGetServers();
+  const { servers, getServers } = useGetServers();
+
+  useEffect(() => {
+    getServers();
+  }, [getServers]);
+
   const activeServer = servers?.find((s) => s.id === activeServerId);
 
   useEffect(() => {
@@ -62,20 +67,22 @@ export const LayoutFile = ({
           <SheetContent side="left" className="max-w-[375px] w-full">
             <SheetTitle className="hidden" />
             <Sidebar
-              initialServers={servers || []}
-              activeServerId={activeServerId || ""}
+              initialServers={servers}
+              activeServerId={activeServerId}
               handleChannelClick={handleSheet}
             />
           </SheetContent>
         </Sheet>
-      ) : (
+      ) : !isMobile && servers ? (
         <div className="w-[375px] shrink-0">
           <Sidebar
-            initialServers={servers || []}
-            activeServerId={activeServerId || ""}
+            initialServers={servers}
+            activeServerId={activeServerId}
             handleChannelClick={handleSheet}
           />
         </div>
+      ) : (
+        <div className="w-[375px] shrink-0" />
       )}
 
       <div className="flex flex-col bg-secondary h-full w-full relative">

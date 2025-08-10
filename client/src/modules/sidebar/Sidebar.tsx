@@ -28,7 +28,7 @@ export const Sidebar = ({
   handleChannelClick
 }: {
   initialServers: ServersData[];
-  activeServerId: string;
+  activeServerId?: string;
   handleChannelClick:(open:boolean)=>void
 }) => {
   const [servers, setServers] = useState(initialServers);
