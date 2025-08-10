@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { authenticateToken } from "../middleware/auth";
-import { Role } from "../../utils/enum";
+import { Role } from "../utils/enum";
 
 const router = express.Router();
 const prisma = new PrismaClient();

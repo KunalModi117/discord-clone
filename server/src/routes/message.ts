@@ -2,7 +2,7 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { authenticateToken } from "../middleware/auth";
 import { Server } from "socket.io";
-import { Event } from "../../utils/enum";
+import { Event } from "../utils/enum";
 
 const router = express.Router();
 const prisma = new PrismaClient();
