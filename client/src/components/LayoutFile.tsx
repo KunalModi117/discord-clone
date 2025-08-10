@@ -49,7 +49,7 @@ export const LayoutFile = ({
   if (!me) {
     return (
       <div className="flex items-center justify-center h-full">
-        You're not authorized to access this page
+        You&apos;re not authorized to access this page
       </div>
     );
   }
