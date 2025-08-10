@@ -8,15 +8,16 @@ import { nanoid } from "nanoid";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useGetMembersByServerId } from "../sidebar/hooks/useGetMembersByServerId";
 import { MessageItem } from "./MessageItem";
 import { MessageItemSkeleton } from "./MessageItemSkeleton";
 import { useGetMe } from "./useGetMe";
 import { Message, useGetMessageByChannelId } from "./useGetMessageByChannelId";
-import { useGetMembersByServerId } from "../sidebar/hooks/useGetMembersByServerId";
 
-import { useUploadThing } from "@discord/utils/uploadThing";
-import { cn } from "@discord/lib/utils";
 import { Avatar } from "@discord/components/Avatar";
+import { cn } from "@discord/lib/utils";
+import { AnyType } from "@discord/type";
+import { useUploadThing } from "@discord/utils/uploadThing";
 
 interface TempImageMessage extends Message {
   isTemp: true;
@@ -38,7 +39,7 @@ export const Chat = () => {
   const { addTypingUser, removeTypingUser, setStatus } =
     useMemberStore.getState();
   const [messages, setMessages] = useState<ExtendedMessage[]>([]);
-  const typingTimeoutRef = useRef<any>(null);
+  const typingTimeoutRef = useRef<AnyType>(null);
   const [newMessage, setNewMessage] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const searchParams = useSearchParams();
@@ -66,10 +67,9 @@ export const Chat = () => {
   const { startUpload, isUploading } = useUploadThing(
     "imageAndGifUploader",
     {
-      onClientUploadComplete: (res: any[]) => {
+      onClientUploadComplete: (res: AnyType[]) => {
         if (res && res[0]) {
           const fileUrl = res[0].serverData.fileUrl;
-          const fileKey = res[0].serverData.fileKey;
           const tempId = res[0].serverData.tempID;
           const isGif = fileUrl.toLowerCase().endsWith(".gif");
 
@@ -320,7 +320,7 @@ export const Chat = () => {
     );
     try {
       await startUpload([target.localFile], { tempID: tempId });
-    } catch (error) {
+    } catch {
       setMessages((prev) =>
         prev.map((m) =>
           m.tempId === tempId ? { ...m, uploadStatus: "FAILED" } : m

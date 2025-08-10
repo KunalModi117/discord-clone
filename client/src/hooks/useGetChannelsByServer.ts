@@ -33,14 +33,13 @@ export const useGetChannelsByServer = () => {
     enabled: false,
   });
 
-  useEffect(()=>{
-    if(serverId && token){
-        refetch();
+  useEffect(() => {
+    if (serverId && token) {
+      refetch();
     }
-  },[serverId,token])
+  }, [serverId, token]);
 
   const getChannels = useCallback((serverId: string) => {
-    console.log('serverId,',serverId);
     setServerId(serverId);
   }, []);
 

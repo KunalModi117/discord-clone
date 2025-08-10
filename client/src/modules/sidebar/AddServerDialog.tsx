@@ -12,14 +12,14 @@ import {
   DialogTitle,
 } from "@discord/components/ui/dialog";
 import { useReactHookForm } from "@discord/hooks/useReactHookForm";
+import { cn } from "@discord/lib/utils";
+import { AnyType } from "@discord/type";
+import { useUploadThing } from "@discord/utils/uploadThing";
+import { ImagePlus, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createServerSchema, joinServerSchema } from "./createServerSchema";
 import { useCreateServer } from "./hooks/useCreateServer";
 import { useJoinServer } from "./hooks/useJoinServer";
-import { cn } from "@discord/lib/utils";
-import { useUploadThing } from "@discord/utils/uploadThing";
-import { Avatar } from "@discord/components/Avatar";
-import { ImagePlus, Loader2 } from "lucide-react";
 
 interface ServerFormData {
   serverName: string;
@@ -56,12 +56,12 @@ export const AddServerDialog = ({
     isPending: isJoinPending,
     isSuccess: isJoinSuccess,
   } = useJoinServer();
-  
+
   const [serverImageUrl, setServerImageUrl] = useState<string>("");
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string>("");
 
   const { startUpload, isUploading } = useUploadThing("serverImageUploader", {
-    onClientUploadComplete: (res: any[]) => {
+    onClientUploadComplete: (res: AnyType[]) => {
       if (res && res[0]) {
         const fileUrl = res[0].serverData.fileUrl;
         setServerImageUrl(fileUrl);
@@ -115,7 +115,9 @@ export const AddServerDialog = ({
                 <div
                   className={cn(
                     "h-20 w-20 rounded-xl overflow-hidden bg-secondary border border-input flex items-center justify-center",
-                    !localPreviewUrl && !serverImageUrl && "text-muted-foreground"
+                    !localPreviewUrl &&
+                      !serverImageUrl &&
+                      "text-muted-foreground"
                   )}
                 >
                   {localPreviewUrl || serverImageUrl ? (
@@ -150,7 +152,9 @@ export const AddServerDialog = ({
                   className="hidden"
                   disabled={isUploading}
                   onChange={async (e) => {
-                    const files = e.target.files ? Array.from(e.target.files) : [];
+                    const files = e.target.files
+                      ? Array.from(e.target.files)
+                      : [];
                     if (files.length === 0) return;
                     const file = files[0];
                     setLocalPreviewUrl(URL.createObjectURL(file));
@@ -181,7 +185,10 @@ export const AddServerDialog = ({
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button disabled={isPending || isUploading} loading={isPending || isUploading}>
+              <Button
+                disabled={isPending || isUploading}
+                loading={isPending || isUploading}
+              >
                 Create
               </Button>
             </DialogFooter>

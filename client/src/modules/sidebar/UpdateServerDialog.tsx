@@ -12,13 +12,13 @@ import {
   DialogTitle,
 } from "@discord/components/ui/dialog";
 import { useReactHookForm } from "@discord/hooks/useReactHookForm";
+import { cn } from "@discord/lib/utils";
+import { AnyType } from "@discord/type";
+import { useUploadThing } from "@discord/utils/uploadThing";
+import { ImagePlus, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createServerSchema } from "./createServerSchema";
 import { useUpdateServer } from "./hooks/useUpdateServer";
-import { useUploadThing } from "@discord/utils/uploadThing";
-import { Avatar } from "@discord/components/Avatar";
-import { ImagePlus, Loader2 } from "lucide-react";
-import { cn } from "@discord/lib/utils";
 
 interface UpdateServerFormData {
   serverName: string;
@@ -50,7 +50,7 @@ export const UpdateServerDialog = ({
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string>("");
 
   const { startUpload, isUploading } = useUploadThing("serverImageUploader", {
-    onClientUploadComplete: (res: any[]) => {
+    onClientUploadComplete: (res: AnyType[]) => {
       if (res && res[0]) {
         const fileUrl = res[0].serverData.fileUrl;
         setServerImageUrl(fileUrl);

@@ -3,6 +3,7 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { verify } from "jsonwebtoken";
 import { parse } from "cookie";
+import { AnyType } from "@discord/type";
 
 const f = createUploadthing();
 
@@ -15,7 +16,7 @@ const authenticateRequest = async (req: Request) => {
   }
 
   try {
-    const decoded: any = verify(token, process.env.JWT_SECRET!);
+    const decoded: AnyType = verify(token, process.env.JWT_SECRET!);
     return { userId: decoded.userId };
   } catch (err) {
     console.error("JWT verification failed:", err);
@@ -60,14 +61,13 @@ export const ourFileRouter = {
       maxFileSize: "4MB",
       maxFileCount: 1,
     },
-  })
-    .onUploadComplete(async ({ file }) => {
-      console.log("Avatar upload complete. File URL:", file.ufsUrl);
-      return {
-        fileUrl: file.ufsUrl,
-        fileKey: file.key,
-      };
-    }),
+  }).onUploadComplete(async ({ file }) => {
+    console.log("Avatar upload complete. File URL:", file.ufsUrl);
+    return {
+      fileUrl: file.ufsUrl,
+      fileKey: file.key,
+    };
+  }),
   serverImageUploader: f({
     image: {
       maxFileSize: "4MB",
@@ -77,14 +77,13 @@ export const ourFileRouter = {
       maxFileSize: "4MB",
       maxFileCount: 1,
     },
-  })
-    .onUploadComplete(async ({ file }) => {
-      console.log("Server image upload complete. File URL:", file.ufsUrl);
-      return {
-        fileUrl: file.ufsUrl,
-        fileKey: file.key,
-      };
-    }),
+  }).onUploadComplete(async ({ file }) => {
+    console.log("Server image upload complete. File URL:", file.ufsUrl);
+    return {
+      fileUrl: file.ufsUrl,
+      fileKey: file.key,
+    };
+  }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

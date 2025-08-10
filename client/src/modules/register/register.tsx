@@ -13,6 +13,7 @@ import { useUploadThing } from "@discord/utils/uploadThing";
 import { cn } from "@discord/lib/utils";
 import { ImagePlus, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { AnyType } from "@discord/type";
 
 interface FormData {
   userName: string;
@@ -30,7 +31,7 @@ export const Register = () => {
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string>("");
 
   const { startUpload, isUploading } = useUploadThing("avatarUploader", {
-    onClientUploadComplete: (res: any[]) => {
+    onClientUploadComplete: (res: AnyType[]) => {
       if (res && res[0]) {
         const fileUrl = res[0].serverData.fileUrl;
         setAvatarUrl(fileUrl);
@@ -102,7 +103,9 @@ export const Register = () => {
                 className="hidden"
                 disabled={isUploading}
                 onChange={async (e) => {
-                  const files = e.target.files ? Array.from(e.target.files) : [];
+                  const files = e.target.files
+                    ? Array.from(e.target.files)
+                    : [];
                   if (files.length === 0) return;
                   const file = files[0];
                   setLocalPreviewUrl(URL.createObjectURL(file));
@@ -142,12 +145,19 @@ export const Register = () => {
             required
           />
           <div className="flex flex-col gap-2 w-full">
-            <Button className="w-full" loading={isPending || isUploading} disabled={isUploading}>
+            <Button
+              className="w-full"
+              loading={isPending || isUploading}
+              disabled={isUploading}
+            >
               Create account
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              Already have an account? {" "}
-              <Link href={routePath.signIn} className="text-primary hover:underline">
+              Already have an account?{" "}
+              <Link
+                href={routePath.signIn}
+                className="text-primary hover:underline"
+              >
                 Sign in
               </Link>
             </p>

@@ -1,21 +1,10 @@
 "use client";
 
-import { Skeleton } from "@discord/components/ui/skeleton";
+import { Avatar } from "@discord/components/Avatar";
 import { cn } from "@discord/lib/utils";
 import { useMemberStore } from "@discord/utils/zustandStore";
 import { Crown } from "lucide-react";
 import { useEffect } from "react";
-import { Avatar } from "@discord/components/Avatar";
-
-const SkeletonItem = () => {
-  return (
-    <div className="flex gap-2 items-center p-1 hover:bg-gray-700 rounded-md mt-2">
-      <Skeleton className="h-6 w-6 rounded-full" />
-      <Skeleton className="w-18 h-3" />
-      <Skeleton className="w-2 h-2" />
-    </div>
-  );
-};
 
 export const MembersSidebar = ({
   activeServerId,

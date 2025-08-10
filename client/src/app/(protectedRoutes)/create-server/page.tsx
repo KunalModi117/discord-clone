@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const Page = () => {
-  const { getServers, isServersLoaded, servers } =
-    useGetServers();
+  const { getServers, isServersLoaded, servers } = useGetServers();
   const router = useRouter();
 
   useEffect(() => {

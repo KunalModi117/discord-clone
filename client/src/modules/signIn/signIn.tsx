@@ -20,7 +20,8 @@ interface FormData {
 export const SignIn = () => {
   const { control, handleSubmit, errors } = useReactHookForm(signInSchema);
   const { signIn, isPending, isSuccess } = useSignIn();
-  const { getServers, isServersLoaded, isServersLoading,servers } = useGetServers();
+  const { getServers, isServersLoaded, isServersLoading, servers } =
+    useGetServers();
   const router = useRouter();
 
   useEffect(() => {
@@ -29,15 +30,15 @@ export const SignIn = () => {
     }
   }, [isSuccess]);
 
-  useEffect(()=>{
-    if(isServersLoaded){
-      if(servers.length){
-        router.push(`/${servers[0].id}?channelId=${servers[0].channels[0].id}`)
-      }else{
-        router.push("/create-server")
+  useEffect(() => {
+    if (isServersLoaded) {
+      if (servers.length) {
+        router.push(`/${servers[0].id}?channelId=${servers[0].channels[0].id}`);
+      } else {
+        router.push("/create-server");
       }
     }
-  },[isServersLoaded])
+  }, [isServersLoaded, servers]);
 
   const submit = (data: FormData) => {
     signIn(data);
@@ -73,8 +74,11 @@ export const SignIn = () => {
               Sign in
             </Button>
             <p className="text-sm text-muted-foreground text-center">
-              Don&apos;t have an account? {" "}
-              <Link href={routePath.register} className="text-primary hover:underline">
+              Don&apos;t have an account?{" "}
+              <Link
+                href={routePath.register}
+                className="text-primary hover:underline"
+              >
                 Create one
               </Link>
             </p>

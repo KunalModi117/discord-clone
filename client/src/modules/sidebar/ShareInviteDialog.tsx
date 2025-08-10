@@ -29,7 +29,7 @@ export const ShareInviteDialog = ({
     try {
       await navigator.clipboard.writeText(inviteCode);
       toast.success("Invite code copied to clipboard");
-    } catch (e) {
+    } catch {
       toast.error("Failed to copy invite code");
     }
   };

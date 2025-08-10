@@ -1,10 +1,11 @@
+import { AnyType } from "@discord/type";
 import { appconfig } from "./app.config";
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface FetcherOptions {
   method?: Method;
-  body?: any;
+  body?: AnyType;
   headers?: HeadersInit;
   credentials?: RequestCredentials;
   next?: NextFetchRequestConfig; 
@@ -12,7 +13,7 @@ interface FetcherOptions {
 
 const BASE_URL = appconfig.apiBaseUrl || "";
 
-export const fetcher = async <T = any>(
+export const fetcher = async <T = AnyType>(
   endpoint: string,
   options: FetcherOptions = {}
 ): Promise<T> => {
